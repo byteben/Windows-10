@@ -15,7 +15,7 @@ ForEach ($Name in $Channel) {
 }
 
 Try {
-    $Registry = Get-ItemProperty -Path $Path -Name $RegName -ErrorAction Stop | Select-Object -ExpandProperty $Name
+    $Registry = Get-ItemProperty -Path $Path -Name $RegName -ErrorAction Stop | Select-Object -ExpandProperty $RegName
     If ($Registry -eq $Value) {
         Write-Output "Compliant"
         Exit 0
