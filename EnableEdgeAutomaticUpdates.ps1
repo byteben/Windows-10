@@ -9,7 +9,7 @@ $Type = "DWORD"
 $Value = 1
 
 ForEach ($Name in $Channel) {
-    If (Get-ItemProperty -Path $Path -Name $Channel -ErrorAction SilentlyContinue) {
+    If (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue) {
         $RegName = $Name
     }
 }
