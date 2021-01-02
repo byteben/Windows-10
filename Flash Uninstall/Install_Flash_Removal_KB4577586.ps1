@@ -8,12 +8,22 @@
 ===========================================================================
     
 Version:
-1.0
+1.1
+Basic Transcript Logging added
+
+1.0 
+Release
 #>
 
 #Set Current Directory
 $ScriptPath = $MyInvocation.MyCommand.Path
 $CurrentDir = Split-Path $ScriptPath
+
+$Log = Join-Path $ENV:TEMP "Flash_Uninstall.log"
+Start-Transcript $Log
+
+#Set WUSA.EXE Variable
+$WUSA = "$env:systemroot\System32\wusa.exe"
 
 #Get OS Release ID
 $OS_ReleaseID = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ReleaseID
@@ -38,24 +48,53 @@ $PatchNames = Get-ChildItem $CurrentDir | Where-Object { $_.PSIsContainer } | Fo
 #Check if the patch has been downloaded for the current system
 $PatchFound = $False
 
-Foreach ($Patch in $PatchNames) {
-	If ($Patch -eq $PatchRequired) {
-		$PatchFound = $True
-
-		#Get MSU from correct Directory
-		$MSUPath = Get-ChildItem (Join-Path $CurrentDir $Patch) -Recurse | Where-Object { $_.Extension -eq ".msu" }
-	}
-}
-
-#Patch detection determines outcome
-If ($PatchFound) {
-	Write-Host "Patch found for this system"
-	Write-Host "Patch Required: $($PatchRequired)"
-	Write-Host "Patch Name: $($MSUPath.Name)"
-
+#Check Installation
+$Patch = Get-Hotfix | Where-Object { $_.HotFixID -match "KB4577586" }
+If ($Patch) {
+	Write-Host "Patch Already Installed"
 }
 else {
-	Write-Host "Patch not found for this system"
-	Write-Host "Patch Required: $($PatchRequired)"
-	Write-Host "Current System: $($OS_String) $($OS_ReleaseID) $($OS_Architecture) PC"
+
+	Foreach ($Patch in $PatchNames) {
+		If ($Patch -eq $PatchRequired) {
+			$PatchFound = $True
+
+			#Get MSU from the correct Directory
+			$MSU = Get-ChildItem (Join-Path $CurrentDir $Patch) -Recurse | Where-Object { $_.Extension -eq ".msu" }
+			$MSUFullPath = Join-Path (Join-Path $CurrentDir $PatchRequired) $MSU.Name
+
+			#Set WUSA Args
+			$Args = @(
+				"""$MSUFullPath"""
+				"/quiet"
+				"/norestart"
+			)
+		}
+	}
+
+	#Patch detection determines outcome
+	If ($PatchFound) {
+		Write-Host "Patch found for this system"
+		Write-Host "Patch Required: $($PatchRequired)"
+		Write-Host "Patch Name: $($MSU.Name)"
+		Write-Host "`Installing Update..."
+
+		#Install Patch
+		Start-Process -FilePath $WUSA -ArgumentList $Args -Wait
+
+		#Check Installation
+		$Patch = Get-Hotfix | Where-Object { $_.HotFixID -match "KB4577586" }
+		If ($Patch) {
+			Write-Host "Patch Installed Successfully"
+		}
+		else {
+			Write-Host "Patch Installation Failed"
+		}
+	}
+	else {
+		Write-Host "Patch not found for this system"
+		Write-Host "Patch Required: $($PatchRequired)"
+		Write-Host "Current System: $($OS_String) $($OS_ReleaseID) $($OS_Architecture) PC"
+	}
 }
+Stop-Transcript
