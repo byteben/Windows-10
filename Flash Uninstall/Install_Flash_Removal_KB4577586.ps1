@@ -27,6 +27,12 @@ $WUSA = "$env:systemroot\System32\wusa.exe"
 
 #Get OS Release ID
 $OS_ReleaseID = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ReleaseID
+
+#Rename variable for Windows 10 20H2 ReleaseID because the same update is used for 2004/2009
+If ($OS_ReleaseID -eq "2009"){
+	$OS_ReleaseID -eq "2004"
+}
+
 $OS_ProductName = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ProductName
 
 #Get OS Architecture
