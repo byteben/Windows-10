@@ -19,7 +19,7 @@ Release
 $ScriptPath = $MyInvocation.MyCommand.Path
 $CurrentDir = Split-Path $ScriptPath
 
-$Log = Join-Path $ENV:TEMP "Flash_Uninstall.log"
+$Log = Join-Path $ENV:WINDIR "Temp\Flash_Uninstall.log"
 Start-Transcript $Log
 
 #Set WUSA.EXE Variable
