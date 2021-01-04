@@ -39,7 +39,7 @@ If ($OS_ReleaseID -eq "2009"){
 $OS_ProductName = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ProductName
 
 #Get OS Architecture
-$OS_Architecture = Switch (Get-CIMInstance -Namespace "ROOT\CIMV2" -Class "Win32_Processor" | Select-Object -ExpandProperty Architecture) {
+$OS_Architecture = Switch (Get-CIMInstance -Namespace "ROOT\CIMV2" -Class "Win32_Processor" | Select-Object -Unique -ExpandProperty Architecture) {
 	9 { 'x64-based' }
 	0 { 'x86-based' }
 	5 { 'ARM64-based' }
