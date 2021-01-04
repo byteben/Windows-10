@@ -8,6 +8,9 @@
 ===========================================================================
     
 Version:
+1.2
+Fixed 20H2 coding error - Credit @AndyUpperton
+
 1.1
 Basic Transcript Logging added
 
@@ -30,7 +33,7 @@ $OS_ReleaseID = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVers
 
 #Rename variable for Windows 10 20H2 ReleaseID because the same update is used for 2004/2009
 If ($OS_ReleaseID -eq "2009"){
-	$OS_ReleaseID -eq "2004"
+	$OS_ReleaseID = "2004"
 }
 
 $OS_ProductName = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ProductName
