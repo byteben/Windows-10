@@ -1,4 +1,3 @@
-
 <#	
 ===========================================================================
 	 Created on:   	14/01/2021 23:06
@@ -27,7 +26,7 @@ Specify the account you wish to add/change on the private key ACL. The default a
 Specify the permission you would like to set. Choose "Read" or "FullControl"
 
 .Example
-Set_PrivateKeyPermission.ps1 -Account "LOCAL SERVICE" -Permission "Read" -Template "Workstation Authentication EAP-TLS"
+Set_PrivateKeyPermission.ps1 -Account "LOCAL SERVICE" -Permission "Read" -Template "Workstation Authentication"
 #>
 
 Param

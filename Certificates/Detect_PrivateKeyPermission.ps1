@@ -1,3 +1,34 @@
+<#	
+===========================================================================
+	 Created on:   	14/01/2021 23:06
+	 Created by:   	Ben Whitmore
+	 Organization: 	-
+	 Filename:     	Detect_PrivateKeyPermission.ps1
+	 Target System: Windows 10 Only
+===========================================================================
+
+1.0 
+Release
+
+.SYNOPSIS
+The purpose of the script is to check the Private Key Permission on a computer certificate issued from a specific template.
+
+.DESCRIPTION
+This script can be used to check an account has the correct permissions on a certificates private key when the certificate has been issued using a specific template.
+
+.Parameter Template
+Specify the name of the template used to issue the certificate
+
+.Parameter Account
+Specify the account you wish to check exists on the private key ACL. The default account will be set to "LOCAL SERVICE" if no parameter is specified
+
+.Parameter Permission
+Specify the permission you would like to check for. Choose "Read" or "FullControl"
+
+.Example
+Detect_PrivateKeyPermission.ps1 -Account "LOCAL SERVICE" -Permission "Read" -Template "Workstation Authentication"
+#>
+
 Param
 (
     [Parameter(Mandatory = $False)]
@@ -41,7 +72,6 @@ ForEach ($Cert in $Certificates) {
     }
     else {
         Write-Warning """$($Account)"" does not have the correct ""$($Permission)"" permission on the Certificate Private Key"
-        Write-Output "Setting Private Key Permission to ""$($Permission)"" for Account ""$($Account)""..."
         Exit 1
     }
 }
