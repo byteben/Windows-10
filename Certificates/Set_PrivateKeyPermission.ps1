@@ -33,7 +33,7 @@ Set_PrivateKeyPermission.ps1 -Account "LOCAL SERVICE" -Permission "Read" -Templa
 Param
 (
     [Parameter(Mandatory = $False)]
-    [String]$Template = "Workstation Authentication EAP-TLS",
+    [String]$Template = "Workstation Authentication",
     [String]$Account = "LOCAL SERVICE",
     [ValidateSet("Read", "FullControl")]
     [String]$Permission = "Read"
