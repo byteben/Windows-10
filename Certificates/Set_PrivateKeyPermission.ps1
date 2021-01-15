@@ -39,13 +39,13 @@ Param
     [String]$Permission = "Read"
 )
 
-#Get Client Certificate issued from the "Workstation Authentication" Template
+#Get Client Certificate issued from the specified Template
 $Certificates = Get-ChildItem Cert:\LocalMachine\my |  Where-Object { $_.HasPrivateKey } | Where-Object { $_.Extensions | Where-Object { ($_.oid.friendlyname -match "Certificate Template Information" -and ($_.Format(0) -like "*$($Template)*")) } }
 
 #Change private key perms on Client Certificates
 ForEach ($Cert in $Certificates) {
 
-    #Format expected Subject Name on Workstation Certificate
+    #Format expected Subject Name on Certificate
     $ComputerName = ([System.Net.Dns]::GetHostByName(($env:computerName))).Hostname
         
     #Get the key
