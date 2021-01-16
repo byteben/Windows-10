@@ -43,9 +43,6 @@ $Certificates = Get-ChildItem Cert:\LocalMachine\my |  Where-Object { $_.HasPriv
 
 #Change private key perms on Client Certificates
 ForEach ($Cert in $Certificates) {
-
-    #Format expected Subject Name on Certificate
-    $ComputerName = ([System.Net.Dns]::GetHostByName(($env:computerName))).Hostname
         
     #Get the key
     $Key = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($Cert)
