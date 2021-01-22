@@ -4,17 +4,20 @@
 	 Created by:   	Ben Whitmore
 	 Organization: 	-
 	 Filename:     	Install_Flash_Removal_KB4577586.ps1
-	 Target System: Windows 10 Only
+	 Target System: Windows 10 , Windows Server 2012/R2 | 2016 | 2019 | 1903 | 1909 | 2004
 ===========================================================================
     
 Version:
-1.2
+1.2.1 - 22/01/2021
+Added support for Server OS - Thanks @Hoorge for the suggestion
+
+1.2 - 04/01/2021
 Fixed 20H2 coding error - Credit @AndyUpperton
 
-1.1
+1.1 02/01/2021
 Basic Transcript Logging added
 
-1.0 
+1.0 - 01/01/2021
 Release
 #>
 
@@ -28,15 +31,35 @@ Start-Transcript $Log
 #Set WUSA.EXE Variable
 $WUSA = "$env:systemroot\System32\wusa.exe"
 
-#Get OS Release ID
-$OS_ReleaseID = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ReleaseID
+#Get OS Product Name
+$OS_ProductName = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion' ProductName).ProductName
 
-#Rename variable for Windows 10 20H2 ReleaseID because the same update is used for 2004/2009
-If ($OS_ReleaseID -eq "2009"){
+#Build OS Version String
+Switch ($OS_ProductName) {
+	{ $_.StartsWith("Windows 10") } { $OS_String = ($OS_ProductName -split "\s+" | Select-Object -First 2) -Join ' ' }
+	{ $_.StartsWith("Windows Server 2012 R2") } { $OS_String = ($OS_ProductName -split "\s+" | Select-Object -First 4) -Join ' ' }
+	{ ($_.StartsWith("Windows Server") -and (!($_.Contains("R2")))) } { $OS_String = ($OS_ProductName -split "\s+" | Select-Object -First 3) -Join ' ' }
+}
+
+#Get OS Release ID for valid OS's
+If (!($OS_String -match "Server 2012")) {
+	$OS_ReleaseID = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion' ReleaseId).ReleaseId
+}
+else {
+	Write-Output "Skipping check of Release ID for $($OS_ProductName)"
+}
+
+#Rename $OS_ReleaseID variable for "Windows 10 20H2" and "Windows Server, version 1909" because the same KB update is used for both 2004 and 2009
+If (($OS_ReleaseID -eq "2009" -and $OS_ProductName -match "Windows 10")) {
 	$OS_ReleaseID = "2004"
 }
 
-$OS_ProductName = Get-ItemProperty "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ProductName
+#Build OS Version Name variable
+Switch ($OS_String) {
+	{ $_.Equals("Windows 10") } { $Version_String = $OS_String + " Version " + $OS_ReleaseID }
+	{ $_.StartsWith("Windows Server 2") } { $Version_String = $OS_String }
+	{ $_.StartsWith("Windows Server,") } { $Version_String = $OS_String + $OS_ReleaseID }
+}
 
 #Get OS Architecture
 $OS_Architecture = Switch (Get-CIMInstance -Namespace "ROOT\CIMV2" -Class "Win32_Processor" | Select-Object -Unique -ExpandProperty Architecture) {
@@ -45,11 +68,7 @@ $OS_Architecture = Switch (Get-CIMInstance -Namespace "ROOT\CIMV2" -Class "Win32
 	5 { 'ARM64-based' }
 }
 
-#Build OS Version String
-$OS_String = ($OS_ProductName -split "\s+" | Select-Object -First 2) -Join ' '
-
-#Build Patch Name String
-$PatchRequired = "Update for Removal of Adobe Flash Player for " + $OS_String + " Version " + $OS_ReleaseID + " for " + $OS_Architecture + " systems (KB4577586)"
+$PatchRequired = "Update for Removal of Adobe Flash Player for " + $Version_String + " for " + $OS_Architecture + " systems (KB4577586)"
 
 #Get Patch Titles
 $PatchNames = Get-ChildItem $CurrentDir | Where-Object { $_.PSIsContainer } | Foreach-Object { $_.Name }
@@ -86,7 +105,7 @@ else {
 		Write-Host "Patch found for this system"
 		Write-Host "Patch Required: $($PatchRequired)"
 		Write-Host "Patch Name: $($MSU.Name)"
-		Write-Host "`Installing Update..."
+		Write-Host "Installing Update..."
 
 		#Install Patch
 		Start-Process -FilePath $WUSA -ArgumentList $Args -Wait
@@ -97,13 +116,12 @@ else {
 			Write-Host "Patch Installed Successfully"
 		}
 		else {
-			Write-Host "Patch Installation Failed"
+			Write-Warning "Patch Installation Failed"
 		}
 	}
 	else {
 		Write-Host "Patch not found for this system"
 		Write-Host "Patch Required: $($PatchRequired)"
-		Write-Host "Current System: $($OS_String) $($OS_ReleaseID) $($OS_Architecture) PC"
 	}
 }
 Stop-Transcript
