@@ -21,7 +21,7 @@ ForEach ($Name in $Channel) {
     Try {
         If (!($NotExist)) {
             Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -ErrorAction Stop | Out-Null
-            Write-Output "Updated Registry Value Succesfully"
+            Write-Output "Updated Registry Value Successfully"
         }
     }
     Catch {
