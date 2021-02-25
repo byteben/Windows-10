@@ -11,13 +11,18 @@ $Value = 1
 ForEach ($Name in $Channel) {
     Try {
         Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop -ErrorVariable NotExist | Out-Null
+        Write-Output """$Path\$Name"" Exists"
+        Write-Output "Attempting to set the Registry Value to $Value"
     }
     Catch {
         Write-Warning "Registry value for $Name not found"
     }  
 
     Try {
-        If (!($NotExist)) { Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -ErrorAction Stop -ErrorVariable SetFailed | Out-Null }
+        If (!($NotExist)) {
+            Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -ErrorAction Stop | Out-Null
+            Write-Output "Updated Registry Value Succesfully"
+        }
     }
     Catch {
         Write-Warning "Could not update the registry value for $Name"
