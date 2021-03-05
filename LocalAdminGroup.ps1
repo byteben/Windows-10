@@ -22,11 +22,10 @@ SAMAccountName of the user being added
 -remove will remove the user from the Local Administrators Group
 
 .Example
-LocalAdminGroup.ps1 -Username ernest.shackleton -Add
-LocalAdminGroup.ps1 -Username ernest.shackleton -Remove
+LocalAdminGroup.ps1 -Username ernest.shackleton -Action "Add"
+LocalAdminGroup.ps1 -Username ernest.shackleton -Action "Remove"
 
 #>
-
 
 [CmdletBinding()]
 param(
