@@ -7,6 +7,9 @@
 ===========================================================================
 
 Version:
+1.0.1 - 05/03/2021
+- Replaced ADSI command with Add-LocalGroupMember and Remove-LocalGroupMember. Thanks @IoanPopovici
+
 1.0 - 05/03/2021
 
 .Synopsis
@@ -18,8 +21,8 @@ Careful thought should be exercised on why you would want to use this.
 SAMAccountName of the user being added
 
 .Parameter Action
--add will add the user to the Local Administrators Group
--remove will remove the user from the Local Administrators Group
+"Add" will add the user to the Local Administrators Group
+"Remove" will remove the user from the Local Administrators Group
 
 .Example
 LocalAdminGroup.ps1 -Username ernest.shackleton -Action "Add"
@@ -37,7 +40,7 @@ param(
 )
 
 $LocalAdmins = Get-LocalGroupMember Administrators | Select-Object -ExpandProperty Name
-$User = (Join-Path $env:USERDOMAIN $Username)
+$User = Join-Path -Path $env:USERDOMAIN -ChildPath $Username
 $UserExists = $Null
 $UserExistsFinal = $Null
 
@@ -56,7 +59,7 @@ Switch ($Action) {
         If (!($UserExists)) {
             Write-Output "Adding $Username to Local Administrators Group"
             Try {
-                ([ADSI]("WinNT://" + $env:COMPUTERNAME + "/administrators,group")).add("WinNT://$env:USERDOMAIN/$username,user")
+                Add-LocalGroupMember -Group "Administrators" -Member $User -ErrorAction Stop
             }
             Catch {
                 Write-Warning $error[0]
@@ -77,7 +80,7 @@ Switch ($Action) {
         If ($UserExists) {
             Write-Output "Removing $Username from Local Administrators Group"
             Try {
-                ([ADSI]("WinNT://" + $env:COMPUTERNAME + "/administrators,group")).remove("WinNT://$env:USERDOMAIN/$username,user")
+                Remove-LocalGroupMember -Group "Administrators" -Member $User -ErrorAction Stop
             }
             Catch {
                 Write-Warning $error[0]
