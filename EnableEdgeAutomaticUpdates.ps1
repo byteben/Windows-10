@@ -9,9 +9,22 @@ $Type = "DWORD"
 $Value = 1
 
 ForEach ($Name in $Channel) {
-    If (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue) {
-        $RegName = $Name
+    Try {
+        Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop -ErrorVariable NotExist | Out-Null
+        Write-Output """$Path\$Name"" Exists"
+        Write-Output "Attempting to set the Registry Value to $Value"
     }
-}
+    Catch {
+        Write-Warning "Registry value for $Name not found"
+    }  
 
-Set-ItemProperty -Path $Path -Name $RegName -Type $Type -Value $Value 
+    Try {
+        If (!($NotExist)) {
+            Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -ErrorAction Stop | Out-Null
+            Write-Output "Updated Registry Value Successfully"
+        }
+    }
+    Catch {
+        Write-Warning "Could not update the registry value for $Name"
+    }
+}  

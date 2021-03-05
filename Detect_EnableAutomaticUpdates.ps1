@@ -8,7 +8,7 @@ Try {
     If ($Registry -eq $Value){
         Write-Output "Compliant"
         Exit 0
-    }
+    } 
     Write-Warning "Not Compliant"
     Exit 1
 } 
