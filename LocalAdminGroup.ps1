@@ -1,4 +1,9 @@
 ﻿<#	
+.Synopsis
+LocalAdminGroup is a script that can be deployed in a Domain environment, from ConfigMgr, that will add or remove individual users from the Local Administrators group.
+Careful thought should be exercised on why you would want to use this.
+
+.Description
 ===========================================================================
 	 Created on:   	05/03/2021
 	 Created by:   	Ben Whitmore
@@ -12,11 +17,6 @@ Version:
 
 1.0 - 05/03/2021
 
-.Synopsis
-LocalAdminGroup is a script that can be deployed in a Domain environment, from ConfigMgr, that will add or remove individual users from the Local Administrators group.
-
-Careful thought should be exercised on why you would want to use this.
-
 .Parameter Username
 SAMAccountName of the user being added
 
@@ -26,6 +26,8 @@ SAMAccountName of the user being added
 
 .Example
 LocalAdminGroup.ps1 -Username ernest.shackleton -Action "Add"
+
+.Example
 LocalAdminGroup.ps1 -Username ernest.shackleton -Action "Remove"
 
 #>
