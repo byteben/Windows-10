@@ -7,8 +7,8 @@ Filename:     Uninstall_SetupComplete.ps1
 .Description
 Script to uninstall a custom SetupComplete.cmd which will be used POSTOOBE when installing a Feautre Update using Windows Update.
 
-$env:SystemDrive\ProgramData\FU\<version>\ will be removed
-$env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\WSUS\SetupConfig.ini will be removed if the following line is present in SetupConfig.ini "PostOOBE=$env:SystemDrive\ProgramData\FU\<version>\SetupComplete.cmd"
+$env:SystemDrive\ProgramData\FeatureUpdate\<version>\ will be removed
+$env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\WSUS\SetupConfig.ini will be removed if the following line is present in SetupConfig.ini "PostOOBE=$env:SystemDrive\ProgramData\FeatureUpdate\<version>\SetupComplete.cmd"
 #>
 
 #Setup environment
@@ -19,7 +19,7 @@ $SetupCompleteVersionFile = Join-Path -Path $ScriptPath -ChildPath "Version.txt"
 Try {
     If (Test-Path -Path $SetupCompleteVersionFile) {
         $SetupCompleteVersion = Get-Content $SetupCompleteVersionFile
-        $SetupCompleteLocation = Join-Path -Path "$($env:SystemDrive)\ProgramData\FU" -ChildPath $SetupCompleteVersion
+        $SetupCompleteLocation = Join-Path -Path "$($env:SystemDrive)\ProgramData\FeatureUpdate" -ChildPath $SetupCompleteVersion
     }
 }
 Catch {
