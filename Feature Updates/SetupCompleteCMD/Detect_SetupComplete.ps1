@@ -5,11 +5,11 @@ Created by:   Ben Whitmore
 Filename:     Detect_SetupComplete.ps1
 
 .Description
-Detection script to be deployed with ConfigMgr to detect SetupComplete.cmd in $env:SystemDrive\ProgramData\FU\<version>\SetupComplete.cmd and to check SetupCOnfig.ini references the correct version of the application i.e. $env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\WSUS\SetupConfig.ini POSTOOBE will reference SetupComplete.cmd as outlined above
+Detection script to be deployed with ConfigMgr to detect SetupComplete.cmd in $env:SystemDrive\ProgramData\FeatureUpdate\<version>\SetupComplete.cmd and to check SetupCOnfig.ini references the correct version of the application i.e. $env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\WSUS\SetupConfig.ini POSTOOBE will reference SetupComplete.cmd as outlined above
 #>
 
 $SetupCompleteVersion = "1.09.04"
-$SetupCompleteLocation = Join-Path -Path "$($env:SystemDrive)\ProgramData\FU" -ChildPath $SetupCompleteVersion
+$SetupCompleteLocation = Join-Path -Path "$($env:SystemDrive)\ProgramData\FeatureUpdate" -ChildPath $SetupCompleteVersion
 
 $FUFilesInComplete = $Null
 $SetupConfigini_Valid = $Null

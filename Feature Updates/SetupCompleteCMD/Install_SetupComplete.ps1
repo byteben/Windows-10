@@ -10,7 +10,7 @@ Files in the "Files" source folder should resemble the structure from the root $
 
 e.g. If you want to copy custom account pictures to your device after the OOBE they should be place in ..\Files\ProgramData\Microsoft\User Account Pictures
 
-Version.txt should contain the current version of SetupComplete.cmd. The application is designed with version control in mind. The version value will determine the path in $env:SystemDrive\ProgramData which the "FU" folder is created and the reference in SetupConfig.ini will also point to $env:SystemDrive\ProgramData\FU\<version>\SetupComplete.cmd
+Version.txt should contain the current version of SetupComplete.cmd. The application is designed with version control in mind. The version value will determine the path in $env:SystemDrive\ProgramData which the "FeatureUpdate" folder is created and the reference in SetupConfig.ini will also point to $env:SystemDrive\ProgramData\FeatureUpdate\<version>\SetupComplete.cmd
 #>
 
 #Setup environment
@@ -21,7 +21,7 @@ $SetupCompleteVersionFile = Join-Path -Path $ScriptPath -ChildPath "Version.txt"
 Try {
     If (Test-Path -Path $SetupCompleteVersionFile) {
         $SetupCompleteVersion = Get-Content $SetupCompleteVersionFile
-        $SetupCompleteLocation = Join-Path -Path "$($env:SystemDrive)\ProgramData\FU" -ChildPath $SetupCompleteVersion
+        $SetupCompleteLocation = Join-Path -Path "$($env:SystemDrive)\ProgramData\FeatureUpdate" -ChildPath $SetupCompleteVersion
         $SetupCompleteCMD = Join-Path -Path $SetupCompleteLocation -ChildPath "SetupComplete.cmd"
     }
 }
