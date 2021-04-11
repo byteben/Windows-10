@@ -8,7 +8,7 @@ Filename:     Install_SetupComplete.ps1
 Script to install a custom SetupComplete.cmd which will be used POSTOOBE when installing a Feautre Update using Windows Update.
 Files in the "Files" source folder should resemble the structure from the root $env:SystemDrive
 
-e.g. If you want to copy custom account pictures to your device after the OOBE they should be place in ..\Files\ProgramData\Microsoft\User Account Pictures
+e.g. If you want to copy custom account pictures to your device after the OOBE they should be placed in ..\Files\ProgramData\Microsoft\User Account Pictures
 
 Version.txt should contain the current version of SetupComplete.cmd. The application is designed with version control in mind. The version value will determine the path in $env:SystemDrive\ProgramData which the "FeatureUpdate" folder is created and the reference in SetupConfig.ini will also point to $env:SystemDrive\ProgramData\FeatureUpdate\<version>\SetupComplete.cmd
 #>
@@ -35,7 +35,7 @@ Try {
     New-Item $SetupCompleteLocation -ItemType Directory -Force 
     New-Item $SetupCompleteCMD -ItemType File -Force 
 
-    #Add correct version of SetupComplete.ps1 to run post FU
+    #Add correct version of SetupComplete.ps1 to run post Feature Update
     Add-Content -Path $SetupCompleteCMD -Value "powershell.exe -executionpolicy bypass -file $($SetupCompleteLocation)\SetupComplete.ps1 -WindowStyle Hidden"
 }
 Catch {
@@ -44,10 +44,10 @@ Catch {
 
 Try {
 
-    #Declare items to copy to FU staging folder
+    #Declare items to copy to Feature Update staging folder
     $SetupFiles = @("SetupComplete.ps1", "Files", "Version.txt")
 
-    #Copy Files from Script Root to FU staging folder
+    #Copy Files from Script Root to Feature Update staging folder
     Foreach ($File in $SetupFiles) {
         $FiletoCopy = Join-Path -Path $ScriptPath -ChildPath $File -ErrorAction SilentlyContinue
         Try {
@@ -59,7 +59,7 @@ Try {
     }
 }
 Catch {
-    Write-Warning "Error settingup FU staging folder"
+    Write-Warning "Error setting up the Feature Update staging folder"
 }
 
 #Create SetupConfig.ini
