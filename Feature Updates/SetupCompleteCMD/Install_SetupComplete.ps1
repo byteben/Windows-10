@@ -67,11 +67,10 @@ Catch {
 
 #Variables for SetupConfig
 $iniFilePath = "$env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\WSUS\SetupConfig.ini"
-$PriorityValue = "High"
-$BitlockerValue = "AlwaysSuspend"
+$PriorityValue = "Normal"
 
 $iniSetupConfigSlogan = "[SetupConfig]"
-$iniSetupConfigKeyValuePair = @{"Bitlocker" = $BitlockerValue; "Priority" = $PriorityValue; "PostOOBE" = $SetupCompleteCMD }
+$iniSetupConfigKeyValuePair = @{"Priority" = $PriorityValue; "PostOOBE" = $SetupCompleteCMD }
 
 #Init SetupConfig content
 $iniSetupConfigContent = @"
