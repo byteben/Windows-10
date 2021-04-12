@@ -13,7 +13,7 @@ This script will copy files to the device that are replaced, or required, after 
 #Setup environment
 $ScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
-#Copy Files from Script Root to FU staging folder     
+#Copy Files from Script Root to Feature Update staging folder     
 Try {
     $FilestoCopy = Join-Path -Path $ScriptPath -ChildPath "Files"
     Robocopy.exe $FilestoCopy $env:systemdrive\ /e /z /r:5 /w:1 /eta
