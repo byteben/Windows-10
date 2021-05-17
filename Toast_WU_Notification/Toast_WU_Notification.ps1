@@ -19,7 +19,7 @@ Param
 #region ToastCustomisation
 
 #Create Toast Variables
-$ToastTime = "16:00"
+$ToastTime = "16:30"
 $ToastTitle = "Updates are Scheduled"
 $ToastText = "Windows Updates will be installed on this Windows 10 device this afternoon after $ToastTime. Please leave your device switched on to allow the maintenenace to complete."
 
@@ -34,9 +34,6 @@ $ToastTimeToUse = [datetime]::ParseExact($ToastTime, "HH:mm", $null)
 $BadgeImgName = "SquareLogo.png"
 $HeroImgName = "DornanLogo.jpg"
 
-$BadgeImage = Join-Path $ENV:Windir -ChildPath "Temp\$BadgeImgName"
-$HeroImage = Join-Path $ENV:Windir -ChildPath "Temp\$HeroImgName"
-
 #endregion ToastCustomisation
 
 #region ToastRunningValues
@@ -50,11 +47,14 @@ If (!($ToastGUID)) {
 $ScriptPath = $MyInvocation.MyCommand.Path
 $CurrentDir = Split-Path $ScriptPath
 
-#Set Toast Path to UserProfile Temp Directory
+#Set Toast Path to Temp Directory
 $ToastPath = (Join-Path $ENV:Windir "Temp\$($ToastGuid)")
 
+#Set Toast PS File Name
 $ToastPSFile = $MyInvocation.MyCommand.Name
 
+$BadgeImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$BadgeImgName"
+$HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
 #endregion ToastRunningValues
 
 #region ScriptFunctions
