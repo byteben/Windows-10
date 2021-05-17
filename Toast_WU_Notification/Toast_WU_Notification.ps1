@@ -120,8 +120,8 @@ function Display-ToastNotification {
         Start-Transcript $Log
 
         #Enable Notifications
-        Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Type DWord -Value 0 -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+        #Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+        #Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Type DWord -Value 1 -ErrorAction SilentlyContinue
 		
         #Get logged on user DisplayName
         #Try to get the DisplayName for Domain User
