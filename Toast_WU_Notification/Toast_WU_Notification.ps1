@@ -20,8 +20,8 @@ Param
 
 #Create Toast Variables
 $ToastTime = "16:30"
-$ToastTitle = "Updates are Scheduled"
-$ToastText = "Windows Updates will be installed on this Windows 10 device this afternoon after $ToastTime. Please leave your device switched on to allow the maintenenace to complete."
+$ToastTitle = "An Important Update is Scheduled"
+$ToastText = "Windows 10 20H2 is being rolled out this afternoon after 16:00. You MUST leave your computer on. Failure to leave your computer on will result in a delay accessing your computer in the morning."
 
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"
@@ -118,6 +118,10 @@ function Display-ToastNotification {
 		
         $Log = (Join-Path $ENV:Windir "Temp\$($ToastGuid).log")
         Start-Transcript $Log
+
+        #Enable Notifications
+        Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Type DWord -Value 1 -ErrorAction SilentlyContinue
 		
         #Get logged on user DisplayName
         #Try to get the DisplayName for Domain User
@@ -211,7 +215,7 @@ function Display-ToastNotification {
 		
         #Build XML ToastTemplate 
         [xml]$ToastTemplate = @"
-<toast duration="$ToastDuration" scenario="reminder">
+<toast duration="$ToastDuration" scenario="alarm">
     <visual>
         <binding template="ToastGeneric">
             <text>$CustomHello</text>
