@@ -1,5 +1,5 @@
 $Path = "HKLM:\Software\Microsoft\!ProactiveRemediations"
-$Name = "20H2NotificationSchTaskCreated163toast 0"
+$Name = "20H2NotificationSchTaskCreated1630"
 $Type = "DWORD"
 $Value = 1
 
