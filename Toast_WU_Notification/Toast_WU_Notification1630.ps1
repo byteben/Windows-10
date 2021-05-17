@@ -20,8 +20,8 @@ Param
 
 #Create Toast Variables
 $ToastTime = "16:30"
-$ToastTitle = "An Important Update is Scheduled"
-$ToastText = "You MUST leave your computer on after 17:00 today. Failure to leave your computer on will result in a delay accessing your computer in the morning."
+$ToastTitle = " - An Important Update is Scheduled"
+$ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
 
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"

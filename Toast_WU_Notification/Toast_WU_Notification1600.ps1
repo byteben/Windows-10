@@ -20,8 +20,8 @@ Param
 
 #Create Toast Variables
 $ToastTime = "16:00"
-$ToastTitle = "An Important Update is Scheduled"
-$ToastText = "You MUST leave your computer on after 17:00 today. Failure to leave your computer on will result in a delay accessing your computer in the morning."
+$ToastTitle = " - An Important Update is Scheduled"
+$ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
 
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"
@@ -65,6 +65,9 @@ function Display-ToastNotification {
     #$WebClient = New-Object System.Net.WebClient
     #$WebClient.DownloadFile("$BadgeImageUri", "$BadgeImage")
     #$WebClient.DownloadFile("$HeroImageUri", "$HeroImage")
+
+    #Force TLS1.2 COnnection
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     $BadgeImageUri = [Uri]::new([Uri]::new($ImageRepositoryUri), $BadgeImgName).ToString()
     $HeroImageUri = [Uri]::new([Uri]::new($ImageRepositoryUri), $HeroImgName).ToString()
