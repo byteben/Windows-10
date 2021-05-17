@@ -21,7 +21,7 @@ Param
 #Create Toast Variables
 $ToastTime = "16:00"
 $ToastTitle = "An Important Update is Scheduled"
-$ToastText = "Windows 10 20H2 is being rolled out this afternoon after 16:00. You MUST leave your computer on. Failure to leave your computer on will result in a delay accessing your computer in the morning."
+$ToastText = "You MUST leave your computer on after 16:00 today. Failure to leave your computer on will result in a delay accessing your computer in the morning."
 
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"
@@ -111,6 +111,8 @@ function Display-ToastNotification {
         $Task_Settings = New-ScheduledTaskSettingsSet -Compatibility V1 -DeleteExpiredTaskAfter (New-TimeSpan -Seconds 600) -AllowStartIfOnBatteries
         $New_Task = New-ScheduledTask -Description "Toast_Notification_$($ToastGuid) Task for user notification. Title: $($ToastTitle) :: Event:$($ToastText) :: Source Path: $($ToastPath) " -Action $Task_Action -Principal $Task_Principal -Trigger $Task_Trigger -Settings $Task_Settings
         Register-ScheduledTask -TaskName "Toast_Notification_$($ToastGuid)" -InputObject $New_Task
+        #Create Reg key to flag Proactive Remediation as successful
+        Set-ItemProperty -Path "HKLM:\Software\Microsoft\!ProactiveRemediations" -Name "20H2NotificationSchTaskCreated" -Type DWord -Value 1 -ErrorAction SilentlyContinue
     }
 	
     #Run the toast if the script is running in the context of the Logged On User
