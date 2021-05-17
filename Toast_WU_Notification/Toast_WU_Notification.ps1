@@ -218,6 +218,7 @@ function Display-ToastNotification {
             <text>$ToastText</text>
             <text placement="attribution">$Signature</text>
             <image placement="hero" src="$HeroImage"/>
+            <image placement="appLogoOverride" hint-crop="circle" src="$BadgeImage"/>
         </binding>
     </visual>
     <audio src="ms-winsoundevent:notification.default"/>
