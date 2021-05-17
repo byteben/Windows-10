@@ -34,10 +34,8 @@ $ToastTimeToUse = [datetime]::ParseExact($ToastTime, "HH:mm", $null)
 $BadgeImgName = "SquareLogo.png"
 $HeroImgName = "DornanLogo.jpg"
 
-#$BadgeImage = Join-Path $ENV:Windir -ChildPath "Temp\$BadgeImgName"
-#$HeroImage = Join-Path $ENV:Windir -ChildPath "Temp\$HeroImgName"
-$BadgeImage = "C:\Temp\$BadgeImgName"
-$HeroImage = "C:\Temp\$HeroImgName"
+$BadgeImage = Join-Path $ENV:Windir -ChildPath "Temp\$BadgeImgName"
+$HeroImage = Join-Path $ENV:Windir -ChildPath "Temp\$HeroImgName"
 
 #endregion ToastCustomisation
 
