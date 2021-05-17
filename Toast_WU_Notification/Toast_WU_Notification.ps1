@@ -19,7 +19,7 @@ Param
 #region ToastCustomisation
 
 #Create Toast Variables
-$ToastTime = "16:30"
+$ToastTime = "16:00"
 $ToastTitle = "An Important Update is Scheduled"
 $ToastText = "Windows 10 20H2 is being rolled out this afternoon after 16:00. You MUST leave your computer on. Failure to leave your computer on will result in a delay accessing your computer in the morning."
 
