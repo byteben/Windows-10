@@ -13,26 +13,28 @@
 Param
 (
     [Parameter(Mandatory = $False)]
-    [String]$ToastGUID
+    [String]$ToastGUID,
+    [uri]$ImageRepositoryUri = "https://dornanbranding.blob.core.windows.net/logos/",
+    [String]$BadgeImgName = "SquareLogo.png",
+    [String]$HeroImgName = "DornanLogo.jpg"
 )
 
 #region ToastCustomisation
 
 #Create Toast Variables
-$ToastTime = "16:00"
-$ToastTitle = "An Important Update is Scheduled"
-$ToastText = "You MUST leave your computer on after 16:00 today. Failure to leave your computer on will result in a delay accessing your computer in the morning."
+$ToastTimes = @("19:14", "19:16")
+$ToastTitle = " - An Important Update is Scheduled"
+$ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
 
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"
 
 #Format Time
-$ToastTimeToUse = [datetime]::ParseExact($ToastTime, "HH:mm", $null)
-
-#Images
-[uri]$ImageRepositoryUri = "https://dornanbranding.blob.core.windows.net/logos/"
-$BadgeImgName = "SquareLogo.png"
-$HeroImgName = "DornanLogo.jpg"
+$TaskTimes = @()
+Foreach ($ToastTime in $ToastTimes) {
+    $ToastTimeToUse = ([datetime]::ParseExact($ToastTime, "HH:mm", $null))
+    $TaskTimes += $ToastTimeToUse
+}
 
 #endregion ToastCustomisation
 
@@ -65,6 +67,9 @@ function Display-ToastNotification {
     #$WebClient = New-Object System.Net.WebClient
     #$WebClient.DownloadFile("$BadgeImageUri", "$BadgeImage")
     #$WebClient.DownloadFile("$HeroImageUri", "$HeroImage")
+
+    #Force TLS1.2 COnnection
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     $BadgeImageUri = [Uri]::new([Uri]::new($ImageRepositoryUri), $BadgeImgName).ToString()
     $HeroImageUri = [Uri]::new([Uri]::new($ImageRepositoryUri), $HeroImgName).ToString()
@@ -101,18 +106,26 @@ function Display-ToastNotification {
         #Set new Toast script to run from TEMP path
         $New_ToastPath = Join-Path -Path $ToastPath -ChildPath $ToastPSFile
 		
-        #Created Scheduled Task to run as Logged on User
-        $Task_TimeToRun = $ToastTimeToUse
-        $Task_Expiry = $ToastTimeToUse.AddSeconds(21600).ToString('s') #Task Expires after 6 hours
-        $Task_Action = New-ScheduledTaskAction -Execute "C:\WINDOWS\system32\WindowsPowerShell\v1.0\PowerShell.exe" -Argument "-NoProfile -WindowStyle Hidden -File ""$New_ToastPath"" -ToastGUID ""$ToastGUID"""
-        $Task_Trigger = New-ScheduledTaskTrigger -Once -At $Task_TimeToRun
-        $Task_Trigger.EndBoundary = $Task_Expiry
+        #Created Scheduled Tasks to run as Logged on User
+
+        #Create Trigger for eacdh time in $ToastTime
+        $Task_Triggers = @()
+        Foreach ($TaskTime in $TaskTimes) {
+            $Task_Expiry = $TaskTime.AddSeconds(21600).ToString('s') #Task Expires after 6 hours
+            $Task_Trigger = New-ScheduledTaskTrigger -Once -At $TaskTime
+            $Task_Trigger.EndBoundary = $Task_Expiry
+            $Task_Triggers += $Task_Trigger
+        }
+        
         $Task_Principal = New-ScheduledTaskPrincipal -GroupId "S-1-5-32-545" -RunLevel Limited
         $Task_Settings = New-ScheduledTaskSettingsSet -Compatibility V1 -DeleteExpiredTaskAfter (New-TimeSpan -Seconds 600) -AllowStartIfOnBatteries
-        $New_Task = New-ScheduledTask -Description "Toast_Notification_$($ToastGuid) Task for user notification. Title: $($ToastTitle) :: Event:$($ToastText) :: Source Path: $($ToastPath) " -Action $Task_Action -Principal $Task_Principal -Trigger $Task_Trigger -Settings $Task_Settings
+        $Task_Action = New-ScheduledTaskAction -Execute "C:\WINDOWS\system32\WindowsPowerShell\v1.0\PowerShell.exe" -Argument "-NoProfile -WindowStyle Hidden -File ""$New_ToastPath"" -ToastGUID ""$ToastGUID"""
+        $New_Task = New-ScheduledTask -Description "Toast_Notification_$($ToastGuid) Task for user notification. Title: $($ToastTitle) :: Event:$($ToastText) :: Source Path: $($ToastPath) " -Action $Task_Action -Principal $Task_Principal -Trigger $Task_Triggers -Settings $Task_Settings
         Register-ScheduledTask -TaskName "Toast_Notification_$($ToastGuid)" -InputObject $New_Task
+
         #Create Reg key to flag Proactive Remediation as successful
-        Set-ItemProperty -Path "HKLM:\Software\Microsoft\!ProactiveRemediations" -Name "20H2NotificationSchTaskCreated1600" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+        New-Item -Path "HKLM:\Software\Microsoft" -Name "!ProactiveRemediations" -ErrorAction SilentlyContinue
+        New-ItemProperty -Path "HKLM:\Software\Microsoft\!ProactiveRemediations" -Name "20H2NotificationSchTaskCreated1600" -Type DWord -Value 1 -ErrorAction SilentlyContinue
     }
 	
     #Run the toast if the script is running in the context of the Logged On User
