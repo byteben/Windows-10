@@ -112,6 +112,7 @@ function Display-ToastNotification {
         $New_Task = New-ScheduledTask -Description "Toast_Notification_$($ToastGuid) Task for user notification. Title: $($ToastTitle) :: Event:$($ToastText) :: Source Path: $($ToastPath) " -Action $Task_Action -Principal $Task_Principal -Trigger $Task_Trigger -Settings $Task_Settings
         Register-ScheduledTask -TaskName "Toast_Notification_$($ToastGuid)" -InputObject $New_Task
         #Create Reg key to flag Proactive Remediation as successful
+        New-Item -Path "HKLM:\Software\Microsoft" -Name "!ProactiveRemediations"
         New-ItemProperty -Path "HKLM:\Software\Microsoft\!ProactiveRemediations" -Name "20H2NotificationSchTaskCreated1600" -Type DWord -Value 1 -ErrorAction SilentlyContinue
     }
 	
