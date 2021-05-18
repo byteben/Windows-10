@@ -55,6 +55,7 @@ $ToastPath = (Join-Path $ENV:Windir "Temp\$($ToastGuid)")
 #Set Toast PS File Name
 $ToastPSFile = $MyInvocation.MyCommand.Name
 
+#Create image destination variables
 $BadgeImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$BadgeImgName"
 $HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
 #endregion ToastRunningValues
@@ -67,6 +68,13 @@ function Display-ToastNotification {
     #$WebClient = New-Object System.Net.WebClient
     #$WebClient.DownloadFile("$BadgeImageUri", "$BadgeImage")
     #$WebClient.DownloadFile("$HeroImageUri", "$HeroImage")
+
+    #Check for Constrained Language Mode
+    $PSExecutionContext = $ExecutionContext.SessionState.LanguageMode
+    If ($PSExecutionContext -eq "ConstrainedLanguage"){   
+        Write-Warning "Execution Context is set to ConstrainedLanguage from GPO or AppLocker. Script will not run succesfully"
+        Exit 1
+    }
 
     #Force TLS1.2 COnnection
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

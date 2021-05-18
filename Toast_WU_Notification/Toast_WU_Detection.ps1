@@ -1,13 +1,12 @@
 $Path = "HKLM:\Software\Microsoft\!ProactiveRemediations"
 $Name = "20H2NotificationSchTaskCreated"
-$Type = "DWORD"
 $Value = 1
 
 $TargetDate = Get-Date -Day 18 -Month 5 -Year 2021
 $ClientDate = Get-Date
 
 If (!($TargetDate -eq $ClientDate)){
-    Write-Output "Remediation Script to run on ""$($TargetDate)"" but actual date is ""$($ClientDate)"". Remediation will not run."
+    Write-Output "Remediation Target Date""$($TargetDate)"" not valid. Client date is $ClientDate. Remediation will not run."
     Exit 0
 }
 
