@@ -2,7 +2,7 @@ $Path = "HKLM:\Software\Microsoft\!ProactiveRemediations"
 $Name = "20H2NotificationSchTaskCreated"
 $Value = 1
 
-$TargetDate = (Get-Date -Day 18 -Month 5 -Year 2021).ToString("ddMMyyy")
+$TargetDate = (Get-Date -Day 19 -Month 5 -Year 2021).ToString("ddMMyyy")
 $ClientDate = (Get-Date).ToString("ddMMyyy")
 
 If (!($TargetDate -eq $ClientDate)){
