@@ -23,7 +23,7 @@ Param
 
 #Create Toast Variables
 $ToastTimes = @("19:00", "20:00", "21:00")
-$ToastTitle = " - An Important Update is Scheduled"
+$ToastTitle = "an Important Update is Scheduled"
 $ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
 
 #ToastDuration: Short = 7s, Long = 25s
@@ -56,8 +56,8 @@ $ToastPath = (Join-Path $ENV:Windir "Temp\$($ToastGuid)")
 $ToastPSFile = $MyInvocation.MyCommand.Name
 
 #Create image destination variables
-$BadgeImage = Join-Path -Path $ToastPath -ChildPath $BadgeImgName
-$HeroImage = Join-Path -Path $ToastPath -ChildPath $HeroImgName
+$BadgeImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$BadgeImgName"
+$HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
 #endregion ToastRunningValues
 
 #region ScriptFunctions
