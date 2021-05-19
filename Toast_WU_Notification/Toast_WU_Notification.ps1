@@ -8,6 +8,8 @@
 	===========================================================================
 	.DESCRIPTION
 		Notify the logged on user of a pending Windows Updates Installation
+
+        Adding multiple times to the $ToastTimes array will pop the toast at regular intervals
 #>
 
 Param
@@ -50,7 +52,7 @@ $ScriptPath = $MyInvocation.MyCommand.Path
 $CurrentDir = Split-Path $ScriptPath
 
 #Set Toast Path to Temp Directory
-$ToastPath = (Join-Path $ENV:Windir -ChildPath "Temp\$($ToastGUID)")
+$ToastPath = (Join-Path $ENV:Windir -ChildPath "temp\$($ToastGUID)")
 
 #Set Toast PS File Name
 $ToastPSFile = $MyInvocation.MyCommand.Name
@@ -64,13 +66,14 @@ $HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
 # Toast function
 function Display-ToastNotification {
 
-        #Check for Constrained Language Mode
-        $PSExecutionContext = $ExecutionContext.SessionState.LanguageMode
+    #Check for Constrained Language Mode
+    $PSExecutionContext = $ExecutionContext.SessionState.LanguageMode
 
-        If ($PSExecutionContext -eq "ConstrainedLanguage") {   
-            Write-Warning "Execution Context is set to ConstrainedLanguage."
-        }
-	
+    If ($PSExecutionContext -eq "ConstrainedLanguage") {   
+        Write-Warning "Execution Context is set to ConstrainedLanguage. Toast will not run. Ensure your AppLocker policy allow scripts to run from ""$($ToastPath)"" - or even better, sign the script and trust the publisher."
+        Exit 1
+    }
+
     #Force TLS1.2 Connection
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -91,7 +94,7 @@ function Display-ToastNotification {
     #Dont Create a Scheduled Task if the script is running in the context of the logged on user, only if SYSTEM fired the script i.e. Deployment from Intune/ConfigMgr
     If (([System.Security.Principal.WindowsIdentity]::GetCurrent()).Name -eq "NT AUTHORITY\SYSTEM") {
 		     
-        #Prepare to stage Toast Notification Content in %TEMP% Folder
+        #Prepare to stage Toast Notification Content in Toast Folder
         Try {
 			
             #Create TEMP folder to stage Toast Notification Content in %TEMP% Folder
