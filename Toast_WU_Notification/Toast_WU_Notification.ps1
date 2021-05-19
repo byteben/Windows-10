@@ -22,7 +22,7 @@ Param
 #region ToastCustomisation
 
 #Create Toast Variables
-$ToastTimes = @("19:14", "19:16")
+$ToastTimes = @("19:00", "20:00", "21:00")
 $ToastTitle = " - An Important Update is Scheduled"
 $ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
 
