@@ -56,8 +56,8 @@ $ToastPath = (Join-Path $ENV:Windir "Temp\$($ToastGuid)")
 $ToastPSFile = $MyInvocation.MyCommand.Name
 
 #Create image destination variables
-$BadgeImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$BadgeImgName"
-$HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
+$BadgeImage = Join-Path -Path $ToastPath -ChildPath $BadgeImgName
+$HeroImage = Join-Path -Path $ToastPath -ChildPath $HeroImgName
 #endregion ToastRunningValues
 
 #region ScriptFunctions
