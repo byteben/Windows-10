@@ -14,7 +14,7 @@ Param
 (
     [Parameter(Mandatory = $False)]
     [String]$ToastGUID,
-    [uri]$ImageRepositoryUri = "https://github.com/byteben/Toast/blob/master/",
+    [uri]$ImageRepositoryUri = "https://raw.githubusercontent.com/byteben/Toast/master/",
     [String]$BadgeImgName = "badgeimage.jpg",
     [String]$HeroImgName = "heroimage.jpg"
 )
@@ -50,7 +50,7 @@ $ScriptPath = $MyInvocation.MyCommand.Path
 $CurrentDir = Split-Path $ScriptPath
 
 #Set Toast Path to Temp Directory
-$ToastPath = (Join-Path $ENV:Windir "Temp\$($ToastGuid)")
+$ToastPath = (Join-Path $ENV:Windir -ChildPath "Temp\$($ToastGUID)")
 
 #Set Toast PS File Name
 $ToastPSFile = $MyInvocation.MyCommand.Name
@@ -64,21 +64,17 @@ $HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
 # Toast function
 function Display-ToastNotification {
 	
-    #Fetching images from URI
-    #$WebClient = New-Object System.Net.WebClient
-    #$WebClient.DownloadFile("$BadgeImageUri", "$BadgeImage")
-    #$WebClient.DownloadFile("$HeroImageUri", "$HeroImage")
-
     #Check for Constrained Language Mode
     $PSExecutionContext = $ExecutionContext.SessionState.LanguageMode
-    If ($PSExecutionContext -eq "ConstrainedLanguage"){   
+    If ($PSExecutionContext -eq "ConstrainedLanguage") {   
         Write-Warning "Execution Context is set to ConstrainedLanguage from GPO or AppLocker. Script will not run succesfully"
         Exit 1
     }
 
-    #Force TLS1.2 COnnection
+    #Force TLS1.2 Connection
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+    #Fetching images from URI
     $BadgeImageUri = [Uri]::new([Uri]::new($ImageRepositoryUri), $BadgeImgName).ToString()
     $HeroImageUri = [Uri]::new([Uri]::new($ImageRepositoryUri), $HeroImgName).ToString()
     New-Object uri $BadgeImageUri
@@ -94,27 +90,28 @@ function Display-ToastNotification {
 	
     #Dont Create a Scheduled Task if the script is running in the context of the logged on user, only if SYSTEM fired the script i.e. Deployment from Intune/ConfigMgr
     If (([System.Security.Principal.WindowsIdentity]::GetCurrent()).Name -eq "NT AUTHORITY\SYSTEM") {
-		
+		     
         #Prepare to stage Toast Notification Content in %TEMP% Folder
         Try {
 			
             #Create TEMP folder to stage Toast Notification Content in %TEMP% Folder
             New-Item $ToastPath -ItemType Directory -Force -ErrorAction Continue | Out-Null
-            $ToastFiles = Get-ChildItem $CurrentDir -Recurse
-			
+            $ToastFiles = Get-ChildItem $CurrentDir -Filter *.ps1 -Recurse
+
             #Copy Toast Files to Toat TEMP folder
             ForEach ($ToastFile in $ToastFiles) {
-                Copy-Item (Join-Path $CurrentDir $ToastFile) -Destination $ToastPath -ErrorAction Continue
+                Copy-Item -Path (Join-Path -Path $CurrentDir -ChildPath $ToastFile) -Destination $ToastPath -ErrorAction Continue
             }
         }
         Catch {
             Write-Warning $_.Exception.Message
         }
 		
-        #Set new Toast script to run from TEMP path
-        $New_ToastPath = Join-Path -Path $ToastPath -ChildPath $ToastPSFile
-		
         #Created Scheduled Tasks to run as Logged on User
+
+        #New ToastFile to run for Scheduled Task
+
+        $NewToastFile = Join-Path -Path $ToastPath -ChildPath $ToastPSFile
 
         #Create Trigger for eacdh time in $ToastTime
         $Task_Triggers = @()
@@ -127,7 +124,7 @@ function Display-ToastNotification {
         
         $Task_Principal = New-ScheduledTaskPrincipal -GroupId "S-1-5-32-545" -RunLevel Limited
         $Task_Settings = New-ScheduledTaskSettingsSet -Compatibility V1 -DeleteExpiredTaskAfter (New-TimeSpan -Seconds 600) -AllowStartIfOnBatteries
-        $Task_Action = New-ScheduledTaskAction -Execute "C:\WINDOWS\system32\WindowsPowerShell\v1.0\PowerShell.exe" -Argument "-NoProfile -WindowStyle Hidden -File ""$New_ToastPath"" -ToastGUID ""$ToastGUID"""
+        $Task_Action = New-ScheduledTaskAction -Execute "C:\WINDOWS\system32\WindowsPowerShell\v1.0\PowerShell.exe" -Argument "-NoProfile -WindowStyle Hidden -File ""$NewToastFile"" -ToastGUID ""$ToastGUID"""
         $New_Task = New-ScheduledTask -Description "Toast_Notification_$($ToastGuid) Task for user notification. Title: $($ToastTitle) :: Event:$($ToastText) :: Source Path: $($ToastPath) " -Action $Task_Action -Principal $Task_Principal -Trigger $Task_Triggers -Settings $Task_Settings
         Register-ScheduledTask -TaskName "Toast_Notification_$($ToastGuid)" -InputObject $New_Task
 
