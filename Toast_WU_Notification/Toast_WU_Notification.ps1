@@ -14,9 +14,9 @@ Param
 (
     [Parameter(Mandatory = $False)]
     [String]$ToastGUID,
-    [uri]$ImageRepositoryUri = "https://dornanbranding.blob.core.windows.net/logos/",
-    [String]$BadgeImgName = "SquareLogo.png",
-    [String]$HeroImgName = "DornanLogo.jpg"
+    [uri]$ImageRepositoryUri = "https://github.com/byteben/Toast/blob/master/",
+    [String]$BadgeImgName = "badgeimage.jpg",
+    [String]$HeroImgName = "heroimage.jpg"
 )
 
 #region ToastCustomisation
