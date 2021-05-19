@@ -63,14 +63,14 @@ $HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
 #region ScriptFunctions
 # Toast function
 function Display-ToastNotification {
-	
-    #Check for Constrained Language Mode
-    $PSExecutionContext = $ExecutionContext.SessionState.LanguageMode
-    If ($PSExecutionContext -eq "ConstrainedLanguage") {   
-        Write-Warning "Execution Context is set to ConstrainedLanguage from GPO or AppLocker. Script will not run succesfully"
-        Exit 1
-    }
 
+        #Check for Constrained Language Mode
+        $PSExecutionContext = $ExecutionContext.SessionState.LanguageMode
+
+        If ($PSExecutionContext -eq "ConstrainedLanguage") {   
+            Write-Warning "Execution Context is set to ConstrainedLanguage."
+        }
+	
     #Force TLS1.2 Connection
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
