@@ -1,8 +1,8 @@
-$Path = "HKLM:\Software\Microsoft\!ProactiveRemediations"
+$Path = "HKLM:\!ProactiveRemediations"
 $Name = "20H2NotificationSchTaskCreated"
 $Value = 1
 
-$TargetDate = (Get-Date -Day 19 -Month 5 -Year 2021).ToString("ddMMyyy")
+$TargetDate = (Get-Date -Day 20 -Month 5 -Year 2021).ToString("ddMMyyy")
 $ClientDate = (Get-Date).ToString("ddMMyyy")
 
 If (!($TargetDate -eq $ClientDate)){
@@ -13,10 +13,10 @@ If (!($TargetDate -eq $ClientDate)){
 Try {
     $Registry = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $Name
     If ($Registry -eq $Value){
-        Write-Output "Registry Value is 1. Remediation will not run."
+        Write-Output "Remediation not required."
         Exit 0
     } 
-    Write-Output "Registry Value is not 1. Remediation will run."
+    Write-Output "Remediation required"
     Exit 1
 } 
 Catch {
