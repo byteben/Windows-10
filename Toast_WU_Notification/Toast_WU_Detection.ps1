@@ -1,4 +1,4 @@
-$Path = "HKLM:\!ProactiveRemediations"
+$Path = "HKLM:\Software\!ProactiveRemediations"
 $Name = "20H2NotificationSchTaskCreated"
 $Value = 1
 

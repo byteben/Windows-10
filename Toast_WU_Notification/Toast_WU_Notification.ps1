@@ -132,8 +132,8 @@ function Display-ToastNotification {
         Register-ScheduledTask -TaskName "Toast_Notification_$($ToastGuid)" -InputObject $New_Task
 
         #Create Reg key to flag Proactive Remediation as successful
-        New-Item -Path "HKLM:\Software\Microsoft" -Name "!ProactiveRemediations" -ErrorAction SilentlyContinue
-        New-ItemProperty -Path "HKLM:\Software\Microsoft\!ProactiveRemediations" -Name "20H2NotificationSchTaskCreated" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+        New-Item -Path "HKLM:\Software\!ProactiveRemediations" -ErrorAction SilentlyContinue
+        New-ItemProperty -Path "HKLM:\Software\!ProactiveRemediations" -Name "20H2NotificationSchTaskCreated" -Type DWord -Value 1 -ErrorAction SilentlyContinue
     }
 	
     #Run the toast if the script is running in the context of the Logged On User
