@@ -24,9 +24,12 @@ Param
 #region ToastCustomisation
 
 #Create Toast Variables
-$ToastTimes = @("19:00", "20:00", "21:00")
+$ToastTimes = @("15:00", "16:00", "17:00")
 $ToastTitle = "an Important Update is Scheduled"
 $ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
+
+#ToastScenario: Alarm, Reminder
+$ToastScenario = "reminder"
 
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"
@@ -234,7 +237,7 @@ function Display-ToastNotification {
 		
         #Build XML ToastTemplate 
         [xml]$ToastTemplate = @"
-<toast duration="$ToastDuration" scenario="alarm">
+<toast duration="$ToastDuration" scenario="$ToastScenario">
     <visual>
         <binding template="ToastGeneric">
             <text>$CustomHello</text>
