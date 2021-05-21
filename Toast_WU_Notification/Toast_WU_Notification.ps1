@@ -23,7 +23,7 @@ Param
 
 #region ToastCustomisation
 
-#Create Toast Variables
+#Create Toast variables, 24HR Time Format
 $ToastTimes = @("15:00", "16:00", "17:00")
 $ToastTitle = "an Important Update is Scheduled"
 $ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
@@ -34,13 +34,6 @@ $ToastScenario = "reminder"
 #ToastDuration: Short = 7s, Long = 25s
 $ToastDuration = "long"
 
-#Format Time
-$TaskTimes = @()
-Foreach ($ToastTime in $ToastTimes) {
-    $ToastTimeToUse = ([datetime]::ParseExact($ToastTime, "HH:mm", $null))
-    $TaskTimes += $ToastTimeToUse
-}
-
 #endregion ToastCustomisation
 
 #region ToastRunningValues
@@ -48,6 +41,13 @@ Foreach ($ToastTime in $ToastTimes) {
 #Set Unique GUID for the Toast
 If (!($ToastGUID)) {
     $ToastGUID = ([guid]::NewGuid()).ToString().ToUpper()
+}
+
+#Format Time
+$TaskTimes = @()
+Foreach ($ToastTime in $ToastTimes) {
+    $ToastTimeToUse = ([datetime]::ParseExact($ToastTime, "HH:mm", $null))
+    $TaskTimes += $ToastTimeToUse
 }
 
 #Current Directory
@@ -63,9 +63,11 @@ $ToastPSFile = $MyInvocation.MyCommand.Name
 #Create image destination variables
 $BadgeImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$BadgeImgName"
 $HeroImage = Join-Path -Path $ENV:Windir -ChildPath "temp\$HeroImgName"
+
 #endregion ToastRunningValues
 
 #region ScriptFunctions
+
 # Toast function
 function Display-ToastNotification {
 
