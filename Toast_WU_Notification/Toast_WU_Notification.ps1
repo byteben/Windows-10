@@ -15,18 +15,22 @@
 Param
 (
     [Parameter(Mandatory = $False)]
-    [String]$ToastGUID,
-    [uri]$ImageRepositoryUri = "https://raw.githubusercontent.com/byteben/Toast/master/",
-    [String]$BadgeImgName = "badgeimage.jpg",
-    [String]$HeroImgName = "heroimage.jpg"
+    [String]$ToastGUID
 )
 
 #region ToastCustomisation
 
 #Create Toast variables, 24HR Time Format
 $ToastTimes = @("15:00", "16:00", "17:00")
+
+#Toast Message
 $ToastTitle = "an Important Update is Scheduled"
 $ToastText = "You MUST leave your computer on after 17:00 today. Failure to do so will result in a delay accessing your computer tomorrow"
+
+#Toast Images
+[uri]$ImageRepositoryUri = "https://raw.githubusercontent.com/byteben/Toast/master/"
+$BadgeImgName = "badgeimage.jpg"
+$HeroImgName = "heroimage.jpg"
 
 #ToastScenario: Alarm, Reminder
 $ToastScenario = "reminder"
