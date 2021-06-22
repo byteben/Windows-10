@@ -16,7 +16,6 @@ Param(
 )
 
 #Get JoinInfo Reg keys that match the TenantId
-
 $UserWPJPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\JoinInfo"
 $UserWPJRegKeys = Get-ChildItem -Path $UserWPJPath 
 $UserWPJRegKeysMatch = @()
@@ -35,13 +34,11 @@ Foreach ($UserWPJRegKey in $UserWPJRegKeys) {
 }
 
 #Write registry match for HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\JoinInfo\<GUID> Where TenantId matched
-
 Foreach ($WPJRegKeyFound in $UserWPJRegKeysMatch) {
     Write-Host "AAD Registration match found at: ""HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\Joininfo\$WPJRegKeyFound"""
 }
 
 #Get TenantInfo Reg keys that match the TenantId
-
 $TenantInfoPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\TenantInfo"
 $TenantInfoPathRegKeys = Get-ChildItem -Path $TenantInfoPath
 $TenantInfoPathRegKeysMatch = @()
@@ -53,13 +50,11 @@ Foreach ($TenantInfoPathRegKey in $TenantInfoPathRegKeys) {
 }
 
 #Write registry match for HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\TenantInfo\<GUID> Where TenantId matched
-
 Foreach ($AADRegTenantFound in $TenantInfoPathRegKeysMatch) {
     Write-Host "Tenant match found at: ""HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\TenantInfo\$AADRegTenantFound"""
 }
 
 #Get Personal Certificate for AAD Registrations found in registry
-
 $Certs = @()
 Foreach ($Cert in $UserWPJRegKeysMatch) {
     Try {
@@ -79,7 +74,6 @@ Foreach ($CertFound in $Certs) {
 }
 
 #Remove Registry Keys and Certificates if the $Remove parameter is passed
-
 If ($Remove) {
     Write-Host "INFO: ""Remove"" parameter passed to script. Removing AAD Registration and certificates for Tenant ""$($TenantId)"" for the current user" -ForegroundColor Yellow
 
@@ -91,7 +85,6 @@ If ($Remove) {
     }
 
     #Remove registry for HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\TenantInfo\<GUID> Where TenantId matched
-
     Foreach ($AADTenantFound in $TenantInfoPathRegKeysMatch) {
         Write-Host "Removing AAD Registration Tenant match found at: ""HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\TenantInfo\$AADTenantFound"""
         Remove-Item (Join-Path -Path "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WorkplaceJoin\TenantInfo" -ChildPath $AADTenantFound) -Force -Recurse
