@@ -76,7 +76,7 @@
 #>
 Begin {
 
-    # Black list of appx packages to keep installed
+    # Black list of appx packages to remove
     $BlackListedApps = New-Object -TypeName System.Collections.ArrayList
     $BlackListedApps.AddRange(@(
         "Microsoft.GetHelp",
