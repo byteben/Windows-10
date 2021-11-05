@@ -7,21 +7,23 @@ Write-Host "--------------Testing GEO URL's--------------" -ForegroundColor Cyan
 Write-Host "` "
 
 function TestURL($URL) {
+    $URL_Mod = $URL.split("//")
+    $URL_ToTest = $URL_Mod[0] + '//' + $URL_Mod[2]
     Try {
-        $Request = [System.Net.WebRequest]::Create($URL)
+        $Request = [System.Net.WebRequest]::Create($URL_ToTest)
         $Response = $Request.getResponse()
 
         If ($Response.StatusCode -eq 'OK') {
-            Write-Host "$URL is accessible." -ForegroundColor green
+            Write-Host "$URL_ToTest is accessible." -ForegroundColor green
             $Return_Response = "OK"
         }
         Else {
-            Write-Warning "$URL is not accessible. Site may be down."
+            Write-Warning "$URL_ToTest is not accessible. Site may be down."
             $Return_Response = "Failed"
         }
     }
     Catch {
-        Write-Warning "$URL is not accessible. Site may be down."
+        Write-Warning "$URL_ToTest is not accessible. Site may be down."
         $Return_Response = "Failed"
     }
     Return $Return_Response
@@ -50,5 +52,3 @@ If (((TestURL $PublicIP_URI) -eq "OK") -and ((TestURL $GEO_URI) -eq "OK")) {
 else {
     Write-Warning "Could not obtain GEO information. URL(s) inaccessible."
 }
-
-
