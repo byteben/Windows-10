@@ -8,6 +8,10 @@ Proactive Remediation to check clients meet the requirement for update complianc
 Adapted form Microsoft script for update compliance processing at:- 
 https://docs.microsoft.com/en-us/windows/deployment/update/update-compliance-configuration-script
 
+.Description
+**Version 1.0.06.12 - 29/08/2021 - BETA**  
+- Release
+
 -------------------------------------------
 Client Conditions Checked
 -------------------------------------------
@@ -25,18 +29,27 @@ Client Conditions Checked
 -CheckConfigureTelemetryOptInSettingsUx
 
 -------------------------------------------
-IMPORTANT
+Proactive Remediation Information
 -------------------------------------------
--Run script in 64-bit PowerShell
--Run as SYSTEM
+-Run script in 64-bit PowerShell option when creating the PR
+
+Scenario: All tests passed
+Proactive Remediation Predetection Output: "OK"
+
+Scenario: One or more tests failed
+Proactive Remediation Predetection Output: <JSON>
+[{"Test":"CheckConnectivityURL1","Status":"Failed","Result":"Failed. Could not access https://v10c.events.data.microsoft.comm/ping"},
+{"Test":"CheckConnectivityOverallResult","Status":"Failed","Result":"At least one of the required URLs is not accesible"}]
 
 -------------------------------------------
 Manual Testing
 -------------------------------------------
--To launch Powershell as 64bit in SYSTEM context, use "psexec64.exe -s -i C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
--The output is in JSON format. For testing manually, use the example.
-
-ConvertFrom-Json Example:-
+-To run manually, launch Powershell as 64bit in SYSTEM context, use "psexec64.exe -s -i C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+-The output for the PR is as follows:-
+ 
+-------------------------------------------
+Parameter "Detailed" Example Output
+-------------------------------------------
 
 Test                                           Status Result
 ----                                           ------ ------
@@ -60,13 +73,50 @@ CheckAllowWUfBCloudProcessing                  Passed AllowWUfBCloudProcessing v
 CheckConfigureTelemetryOptInChangeNotification Passed ConfigureTelemetryOptInChangeNotification value is 1
 CheckConfigureTelemetryOptInSettingsUx         Passed ConfigureTelemetryOptInSettingsUx value is 1
 
+All Tests Passed
+
+-------------------------------------------
+Parameter "ExportJSON" Example Output
+-------------------------------------------
+
+[{"Test":"CheckSqmID","Status":"Passed","Result":"SQMID found in registry"},
+{"Test":"CheckCommercialIDValue1","Status":"Passed","Result":"Valid GUID found in registry key value"},
+{"Test":"CheckCommercialIDValue2","Status":"Info","Result":"CommercialID value is empty"},
+{"Test":"CheckCommercialIDOverallStatus","Status":"Passed","Result":"CommercialID registry key value 1 is valid"},
+{"Test":"CheckTelemetryOptIn1","Status":"Info","Result":"AllowTelemetry value is empty"},
+{"Test":"CheckTelemetryOptIn2","Status":"Passed","Result":"AllowTelemetry value is 3"},
+{"Test":"CheckTelemetryOptIn3","Status":"Passed","Result":"AllowTelemetry_PolicyManager value is 3"},
+{"Test":"CheckTelemetryOptInOverallStatus","Status":"Passed","Result":"AllowTelemetry_PolicyManager registry key found and wins"},
+{"Test":"CheckConnectivityURL1","Status":"Passed","Result":"https://v10c.events.data.microsoft.com/ping accessible"},
+{"Test":"CheckConnectivityURL2","Status":"Passed","Result":"https://login.live.com accessible"},
+{"Test":"CheckConnectivityOverallResult","Status":"Passed","Result":"All of the required URLs are accesible"},
+{"Test":"CheckUtcCsp","Status":"Passed","Result":"UTC CSP verified"},
+{"Test":"CheckDiagtrackService","Status":"Passed","Result":"Diagtrack service is running"},
+{"Test":"CheckMSAService","Status":"Passed","Result":"MSAService is set to Manual (Triggered Start) but is not running"},
+{"Test":"CheckAllowDeviceName","Status":"Passed","Result":"AllowDeviceNameInTelemetry value is 1"},
+{"Test":"CheckAllowUpdateComplianceProcessing","Status":"Passed","Result":"AllowUpdateComplianceProcessing value is 16"},
+{"Test":"CheckAllowWUfBCloudProcessing","Status":"Passed","Result":"AllowWUfBCloudProcessing value is 8"},
+{"Test":"CheckConfigureTelemetryOptInChangeNotification","Status":"Passed","Result":"ConfigureTelemetryOptInChangeNotification value is 1"},
+{"Test":"CheckConfigureTelemetryOptInSettingsUx","Status":"Passed","Result":"ConfigureTelemetryOptInSettingsUx value is 1"}]
+
+
 .Example 
 Check-UpdateComplianceSetting.ps1
 
 .Example 
-Check-UpdateComplianceSetting.ps1 | ConvertFrom-Json
+Check-UpdateComplianceSetting.ps1 -Detailed
+
+.Example 
+Check-UpdateComplianceSetting.ps1 -ExportJSON
 
 #>
+[CmdletBinding(DefaultParameterSetName = "Default")]
+Param(
+    [Parameter(Mandatory = $false, ParameterSetName = "Detailed")]
+    [Switch]$Detailed,
+    [Parameter(Mandatory = $false, ParameterSetName = "ExportJSON")]
+    [Switch]$ExportJSON
+)
 
 #ConnectivityURLs
 $global:ConnectivityURL = @(
@@ -127,12 +177,48 @@ $main = {
         return $errMsg
     }
 
-    $Global:ScriptOut | ConvertTo-Json -Compress
+    $TotalChecks = ($Global:ScriptOut | Measure-Object).Count
+
+    $FailureFound = $false
+    $errCount = 0
+    $FailureTable = @()
 
     Foreach ($Result in $Global:ScriptOut) {
         If ($Result -like "*Failed*") {
-            Exit 1
+            $FailureTable += $Result
+            $errCount++
+            $FailureFound = $true
         }
+    }
+
+    If ((-not $ExportJSON) -and $Detailed -and (-not $Failurefound)) {
+        $Global:ScriptOut
+    }
+
+    If ((-not $Detailed) -and $ExportJSON -and (-not $Failurefound)) {
+        $Global:ScriptOut | ConvertTo-Json -Compress
+    }
+
+    If ((-not $FailureFound) -and (-not $ExportJSON) -and (-not $Detailed)) {
+        Write-Output "OK"
+        Exit 0
+    } 
+    If ((-not $FailureFound) -and (-not $ExportJSON) -and $Detailed) {
+        Write-Output "`nAll Tests Passed"
+        Exit 0
+    } 
+    If ($FailureFound -and (-not $ExportJSON) -and $Detailed) {
+        $Global:ScriptOut
+        Write-Output "`n$($errCount)/$($TotalChecks) Tests Failed"
+        Exit 1  
+    }
+    If ($FailureFound -and $ExportJSON) {
+        $Global:ScriptOut | ConvertTo-Json -Compress
+        Exit 1  
+    }
+    If ($FailureFound -and (-not $ExportJSON) -and (-not $Detailed)) {
+        $FailureTable | ConvertTo-Json -Compress
+        Exit 1 
     }
 }
 Function Write-Array {
@@ -327,7 +413,7 @@ function CheckConnectivity {
         }
 
         If ($CheckConnectivityOverallStatus) {
-            Write-Array -Status "Failed" -Test "CheckConnectivityOverallResult" -Result "One of the required URLs is inaccesible"
+            Write-Array -Status "Failed" -Test "CheckConnectivityOverallResult" -Result "At least one of the required URLs is not accesible"
         }
         else {
             Write-Array -Status "Passed" -Test "CheckConnectivityOverallResult" -Result "All of the required URLs are accesible"
