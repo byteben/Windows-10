@@ -5,7 +5,7 @@ Created by:   Ben Whitmore @CloudWay
 Filename:     Check-UpdateComplianceSettings.ps1
 
 Proactive Remediation to check clients meet the requirement for update compliance processing. 
-Adapted form Microsoft script for update compliance processing at:- 
+Adapted from Microsoft script for update compliance processing at:- 
 https://docs.microsoft.com/en-us/windows/deployment/update/update-compliance-configuration-script
 
 .Description
