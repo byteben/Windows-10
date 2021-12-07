@@ -1,16 +1,10 @@
 <#
 .Synopsis
-Created on:   04/12/2021
-Created by:   Ben Whitmore @CloudWay
-Filename:     Check-UpdateComplianceSettings.ps1
-
 Proactive Remediation to check clients meet the requirement for update compliance processing. 
-Adapted from Microsoft script for update compliance processing at:- 
-https://docs.microsoft.com/en-us/windows/deployment/update/update-compliance-configuration-script
 
 .Description
-**Version 1.0.06.12 - 29/08/2021 - BETA**  
-- Release
+Adapted from Microsoft script for update compliance processing at:- 
+https://docs.microsoft.com/en-us/windows/deployment/update/update-compliance-configuration-script
 
 -------------------------------------------
 Client Conditions Checked
@@ -40,6 +34,17 @@ Scenario: One or more tests failed
 Proactive Remediation Predetection Output: <JSON>
 [{"Test":"CheckConnectivityURL1","Status":"Failed","Result":"Failed. Could not access https://v10c.events.data.microsoft.comm/ping"},
 {"Test":"CheckConnectivityOverallResult","Status":"Failed","Result":"At least one of the required URLs is not accesible"}]
+
+.Notes
+Created on:   04/12/2021
+Created by:   Ben Whitmore @CloudWay
+Filename:     Check-UpdateComplianceSettings.ps1
+
+**Version 1.0.07.12 - 07/12/21
+- Fixed padding issue for diagtrack test
+
+**Version 1.0.06.12 - 06/12/21  
+- Release
 
 -------------------------------------------
 Manual Testing
@@ -98,7 +103,6 @@ Parameter "ExportJSON" Example Output
 {"Test":"CheckAllowWUfBCloudProcessing","Status":"Passed","Result":"AllowWUfBCloudProcessing value is 8"},
 {"Test":"CheckConfigureTelemetryOptInChangeNotification","Status":"Passed","Result":"ConfigureTelemetryOptInChangeNotification value is 1"},
 {"Test":"CheckConfigureTelemetryOptInSettingsUx","Status":"Passed","Result":"ConfigureTelemetryOptInSettingsUx value is 1"}]
-
 
 .Example 
 Check-UpdateComplianceSetting.ps1
@@ -196,7 +200,7 @@ $main = {
     }
 
     If ((-not $Detailed) -and $ExportJSON -and (-not $Failurefound)) {
-        $Global:ScriptOut | ConvertTo-Json -Compress
+        $Global:ScriptOut | ConvertTo-Json
     }
 
     If ((-not $FailureFound) -and (-not $ExportJSON) -and (-not $Detailed)) {
