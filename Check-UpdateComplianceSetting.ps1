@@ -673,7 +673,7 @@ function CheckConfigureTelemetryOptInSettingsUx {
             }
         }
         else {
-            Write-Array -Status "INFO" -Test "CheckConfigureTelemetryOptInSettingsUx" -Result "ConfigureTelemetryOptInSettingsUx value is empty"
+            Write-Array -Status "Info" -Test "CheckConfigureTelemetryOptInSettingsUx" -Result "ConfigureTelemetryOptInSettingsUx value is empty"
         }
     }     
     Catch {
