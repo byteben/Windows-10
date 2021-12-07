@@ -286,7 +286,7 @@ function CheckCommercialID {
 
 function CheckSqmID {
     Try {
-        $SQMID = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\SQMClient -Name MachineId).MachineId
+        $SQMID = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\SQMClient" -Name MachineId).MachineId
         if (($SQMID -eq $null) -or ($SQMID -eq [string]::Empty)) {
             Write-Array -Status "Failed" -Test "CheckSqmID" -Result "SQMID Not found"
         }
@@ -448,7 +448,7 @@ function CheckUtcCsp {
 function CheckDiagtrackService {
 
     Try {
-        if (Test-Path C:\Windows\System32\diagtrack.dll) {
+        if (Test-Path "C:\Windows\System32\diagtrack.dll") {
             $versionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("C:\Windows\System32\diagtrack.dll")
 
             [string]$majorPart = $versionInfo.FileMajorPart
