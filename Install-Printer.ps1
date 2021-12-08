@@ -6,18 +6,6 @@ Filename:     Install-Printer.ps1
 
 Simple script to install a network printer from an INF file. The INF and required CAB files hould be in the same directory as the script if creating a Win32app
 
-#### Win32App Commands ####
-
-Install:
-powershell.exe -executionpolicy bypass -file .\Install-Printer.ps1 -PortName "IP_10.10.1.1" -PrinterIP = "10.1.1.1" -PrinterName = "Canon Printer Upstairs" -DriverName = "Canon Generic Plus UFR II" -INFFile = "CNLB0MA64.inf"
-
-Uninstall:
-cmd /c
-
-Detection:
-HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Print\Printers\Canon Printer Upstairs
-Name = "Canon Printer Upstairs"
-
 .Example
 .\Install-Printer.ps1 -PortName "IP_10.10.1.1" -PrinterIP "10.1.1.1" -PrinterName "Canon Printer Upstairs" -DriverName "Canon Generic Plus UFR II" -INFFile "CNLB0MA64.inf"
 #>
