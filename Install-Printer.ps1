@@ -40,23 +40,27 @@ $LOGStrip = $PrinterName -replace '\s', ''
 $LOGName = "Printer_$($LOGStrip).log"
 $LOGFile = Join-Path -Path $LOGDIR -ChildPath $LOGName
 
+If (Test-Path $LOGFile) {
+    Remove-Item -Path $LOGFile -Recurse -Force -Confirm:$false
+}
 Start-Transcript -Path $LogFile
 
 $INFARGS = @(
-    "/install"
     "/add-driver"
-    $INFFile
+    "$INFFile"
 )
 
 Try {
-    #Add driver to driver store
-    Write-Output "Adding Driver to Windows DriverStore using INF""$($INFFILE)"""
-    Start-Process pnputil.exe -ArgumentList $INFARGS -Wait -NoNewWindow
 
+    #Add driver to driver store
+    Write-Output "Adding Driver to Windows DriverStore using INF ""$($INFFile)"""
+    Write-Output "Running command: Start-Process C:\Windows\sysnative\pnputil.exe -ArgumentList $($INFARGS) -wait -passthru"
+    Start-Process "C:\Windows\sysnative\pnputil.exe" -ArgumentList $INFARGS -wait -passthru
+    
     #Install driver
     $DriverExist = Get-Printerport -Name $DriverName -ErrorAction SilentlyContinue
     if (-not $DriverExist) {
-        Write-Output "Adding Printer Driver""$($DriverName)"""
+        Write-Output "Adding Printer Driver ""$($DriverName)"""
         Add-PrinterDriver -Name $DriverName -Confirm:$false
     }
     else {
@@ -66,7 +70,7 @@ Try {
     #Create Printer Port
     $PortExist = Get-Printerport -Name $PortName -ErrorAction SilentlyContinue
     if (-not $PortExist) {
-        Write-Output "Adding Port""$($PortName)"""
+        Write-Output "Adding Port ""$($PortName)"""
         Add-PrinterPort -name $PortName -PrinterHostAddress $PrinterIP -Confirm:$false
     }
     else {
