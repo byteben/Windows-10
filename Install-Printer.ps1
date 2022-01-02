@@ -12,7 +12,7 @@ Install:
 powershell.exe -executionpolicy bypass -file .\Install-Printer.ps1 -PortName "IP_10.10.1.1" -PrinterIP "10.1.1.1" -PrinterName "Canon Printer Upstairs" -DriverName "Canon Generic Plus UFR II" -INFFile "CNLB0MA64.inf"
 
 Uninstall:
-cmd /c
+powershell.exe -executionpolicy bypass -file .\Remove-Printer.ps1 -PrinterName "Canon Printer Upstairs"
 
 Detection:
 HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Print\Printers\Canon Printer Upstairs
@@ -43,24 +43,33 @@ function Write-LogEntry {
         [string]$Value,
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [string]$FileName = $PrinterName
+        [string]$FileName = "$($PrinterName).log",
+        [switch]$Stamp
     )
 
     #Build Log File appending System Date/Time to output
     $LogFile = Join-Path -Path $env:SystemRoot -ChildPath $("Temp\$FileName")
     $Time = -join @((Get-Date -Format "HH:mm:ss.fff"), " ", (Get-WmiObject -Class Win32_TimeZone | Select-Object -ExpandProperty Bias))
     $Date = (Get-Date -Format "MM-dd-yyyy")
-    $LogText = "<![LOG[$($Value)]LOG]!><time=""$($Time)"" date=""$($Date)"">"
+
+    If ($Stamp) {
+        $LogText = "<$($Value)> <time=""$($Time)"" date=""$($Date)"">"
+    }
+    else {
+        $LogText = "$($Value)"   
+    }
 	
     Try {
         Out-File -InputObject $LogText -Append -NoClobber -Encoding Default -FilePath $LogFile -ErrorAction Stop
-        Write-Verbose -Message $Value
     }
     Catch [System.Exception] {
         Write-Warning -Message "Unable to add log entry to $LogFile.log file. Error message at line $($_.InvocationInfo.ScriptLineNumber): $($_.Exception.Message)"
     }
 }
 
+Write-LogEntry -Value "##################################"
+Write-LogEntry -Stamp -Value "Installation started"
+Write-LogEntry -Value "##################################"
 Write-LogEntry -Value "Install Printer using the following values..."
 Write-LogEntry -Value "Port Name: $PortName"
 Write-LogEntry -Value "Printer IP: $PrinterIP"
@@ -73,48 +82,102 @@ $INFARGS = @(
     "$INFFile"
 )
 
+#Reset Error catching variable
+$Throwbad = $Null
+
 Try {
 
-    #Add driver to driver store
-    Write-LogEntry -Value"Adding Driver to Windows DriverStore using INF ""$($INFFile)"""
-    Write-LogEntry -Value "Running command: Start-Process C:\Windows\sysnative\pnputil.exe -ArgumentList $($INFARGS) -wait -passthru"
-    Start-Process "C:\Windows\sysnative\pnputil.exe" -ArgumentList $INFARGS -wait -passthru
-    
-    #Install driver
-    $DriverExist = Get-Printerport -Name $DriverName -ErrorAction SilentlyContinue
-    if (-not $DriverExist) {
-        Write-Output "Adding Printer Driver ""$($DriverName)"""
-        Add-PrinterDriver -Name $DriverName -Confirm:$false
-    }
-    else {
-        Write-LogEntry -Value "Print Driver ""$($DriverName)"" already exists. Skipping driver installation."
-    }
+    #Stage driver to driver store
+    Write-LogEntry -Stamp -Value "Staging Driver to Windows Driver Store using INF ""$($INFFile)"""
+    Write-LogEntry -Stamp -Value "Running command: Start-Process C:\Windows\system32\pnputil.exe -ArgumentList $($INFARGS) -wait -passthru"
+    Start-Process C:\Windows\System32\pnputil.exe -ArgumentList $INFARGS -wait -passthru
 
-    #Create Printer Port
-    $PortExist = Get-Printerport -Name $PortName -ErrorAction SilentlyContinue
-    if (-not $PortExist) {
-        Write-LogEntry -Value "Adding Port ""$($PortName)"""
-        Add-PrinterPort -name $PortName -PrinterHostAddress $PrinterIP -Confirm:$false
-    }
-    else {
-        Write-LogEntry -Value "Port ""$($PortName)"" already exists. Skipping Printer Port installation."
-    }
-
-    #Add Printer
-    $PrinterExist = Get-Printer -Name $PrinterName -ErrorAction SilentlyContinue
-    if (-not $PrinterExist) {
-        Write-LogEntry -Value "Adding Printer ""$($PrinterName)"""
-        Add-Printer -Name $PrinterName -DriverName $DriverName -PortName $PortName -Confirm:$false
-    }
-    else {
-        Write-LogEntry -Value "Printer ""$($PrinterName)"" already exists. Removing old printer..."
-        Remove-Printer -Name $PrinterName -Confirm:$false
-        Write-LogEntry -Value "Adding Printer ""$($PrinterName)"""
-        Add-Printer -Name $PrinterName -DriverName $DriverName -PortName $PortName -Confirm:$false
-    }
 }
 Catch {
-    Write-Warning "`nError during installation.."
+    Write-Warning "Error staging driver to Driver Store"
     Write-Warning "$($_.Exception.Message)"
-    Write-LogEntry -Value "$($_.Exception.Message)"
+    Write-LogEntry -Stamp -Value "Error staging driver to Driver Store"
+    Write-LogEntry -Stamp -Value "$($_.Exception)"
+    $ThrowBad = $True
+}
+
+If (-not $ThrowBad) {
+    Try {
+    
+        #Install driver
+        $DriverExist = Get-PrinterDriver -Name $DriverName -ErrorAction SilentlyContinue
+        if (-not $DriverExist) {
+            Write-LogEntry -Stamp Value "Adding Printer Driver ""$($DriverName)"""
+            Add-PrinterDriver -Name $DriverName -Confirm:$false
+        }
+        else {
+            Write-LogEntry -Stamp -Value "Print Driver ""$($DriverName)"" already exists. Skipping driver installation."
+        }
+    }
+    Catch {
+        Write-Warning "Error installing Printer Driver"
+        Write-Warning "$($_.Exception.Message)"
+        Write-LogEntry -Stamp -Value "Error installing Printer Driver"
+        Write-LogEntry -Stamp -Value "$($_.Exception)"
+        $ThrowBad = $True
+    }
+}
+
+If (-not $ThrowBad) {
+    Try {
+
+        #Create Printer Port
+        $PortExist = Get-Printerport -Name $PortName -ErrorAction SilentlyContinue
+        if (-not $PortExist) {
+            Write-LogEntry -Stamp -Value "Adding Port ""$($PortName)"""
+            Add-PrinterPort -name $PortName -PrinterHostAddress $PrinterIP -Confirm:$false
+        }
+        else {
+            Write-LogEntry -Stamp -Value "Port ""$($PortName)"" already exists. Skipping Printer Port installation."
+        }
+    }
+    Catch {
+        Write-Warning "Error creating Printer Port"
+        Write-Warning "$($_.Exception.Message)"
+        Write-LogEntry -Stamp -Value "Error creating Printer Port"
+        Write-LogEntry -Stamp -Value "$($_.Exception)"
+        $ThrowBad = $True
+    }
+}
+
+If (-not $ThrowBad) {
+    Try {
+
+        #Add Printer
+        $PrinterExist = Get-Printer -Name $PrinterName -ErrorAction SilentlyContinue
+        if (-not $PrinterExist) {
+            Write-LogEntry -Stamp -Value "Adding Printer ""$($PrinterName)"""
+            Add-Printer -Name $PrinterName -DriverName $DriverName -PortName $PortName -Confirm:$false
+        }
+        else {
+            Write-LogEntry -Stamp -Value "Printer ""$($PrinterName)"" already exists. Removing old printer..."
+            Remove-Printer -Name $PrinterName -Confirm:$false
+            Write-LogEntry -Stamp -Value "Adding Printer ""$($PrinterName)"""
+            Add-Printer -Name $PrinterName -DriverName $DriverName -PortName $PortName -Confirm:$false
+        }
+
+        if (-not $PrinterExist) {
+            Write-LogEntry -Stamp -Value "Printer ""$($PrinterName)"" was not found after installation"
+            Write-Warning "Error creating Printer"
+            Write-LogEntry -Stamp -Value "Error creating Printer"
+            $ThrowBad = $True
+        }
+    }
+    Catch {
+        Write-Warning "Error creating Printer"
+        Write-Warning "$($_.Exception.Message)"
+        Write-LogEntry -Stamp -Value "Error creating Printer"
+        Write-LogEntry -Stamp -Value "$($_.Exception)"
+        $ThrowBad = $True
+    }
+}
+
+If ($ThrowBad) {
+    Write-Error "An error was thrown during installation. Installation failed. Refer to the log file in %temp% for details"
+    Write-LogEntry -Stamp -Value "Installation Failed"
 }
