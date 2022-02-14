@@ -26,12 +26,12 @@ $BadApps = @(
     "JavaFX"
     "Java 6"
     "Java SE Development Kit 6"
-    "Java(TM) SE Development Kit 6"
-    "Java(TM) 6"
+    "Java`(TM`) SE Development Kit 6"
+    "Java`(TM`) 6"
     "Java 7"
     "Java SE Development Kit 7"
-    "Java(TM) SE Development Kit 7"
-    "Java(TM) 7"
+    "Java`(TM`) SE Development Kit 7"
+    "Java`(TM`) 7"
     "Adobe Flash Player"
     "Adobe Air"
 )
@@ -130,9 +130,11 @@ Foreach ($App in $AppPayLoad) {
 $BadAppPayLoad = $BadAppArray
 
 #Update Event Text Message to include bad apps
+$OutputData = $Null
 $EventText = $EventText + "`n"
 Foreach ($BadApp2 in $BadAppPayload) { 
     $EventText = $EventText + "`n- $($BadApp2.AppName)"
+    $OutputData = $OutputData + $BadApp2.AppName
 }
 #endregion
 
@@ -230,8 +232,7 @@ If ($BadAppFound) {
     #endregion
 
     #Write-Output for Proactive Remediation
-    $BadAppPayLoadOutput = $BadAppPayLoad | ConvertTo-Json
-    Write-Output $BadAppPayLoadOutput
+    Write-Output $OutputData
     Exit 1
 }
 else {
