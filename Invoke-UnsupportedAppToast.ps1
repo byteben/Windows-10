@@ -277,7 +277,7 @@ If ($BadAppFound) {
     #endregion
 
     #Write-Output for Proactive Remediation
-    $BadAppPayLoadOutput = $BadAppPayLoad | ConvertTo-Json
+    $BadAppPayLoadOutput = $BadAppPayLoad | ConvertTo-Json -Compress
     Write-Output $BadAppPayLoadOutput
     Exit 1
 }
