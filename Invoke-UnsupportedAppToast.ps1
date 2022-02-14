@@ -75,6 +75,38 @@ function Get-InstalledApplications() {
     Return $Apps
 }
 #end function
+# Function Write Log Entry
+function Write-LogEntry {
+    param (
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Value,
+        [parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FileName = "UnsupportedAppsFound.log",
+        [switch]$Stamp
+    )
+
+    #Build Log File appending System Date/Time to output
+    $LogFile = Join-Path -Path $env:TEMP -ChildPath $("$FileName")
+    $Time = -join @((Get-Date -Format "HH:mm:ss.fff"), " ", (Get-WmiObject -Class Win32_TimeZone | Select-Object -ExpandProperty Bias))
+    $Date = (Get-Date -Format "MM-dd-yyyy")
+
+    If ($Stamp) {
+        $LogText = "<$($Value)> <time=""$($Time)"" date=""$($Date)"">"
+    }
+    else {
+        $LogText = "$($Value)"   
+    }
+	
+    Try {
+        Out-File -InputObject $LogText -Append -NoClobber -Encoding Default -FilePath $LogFile -ErrorAction Stop
+    }
+    Catch [System.Exception] {
+        Write-Warning -Message "Unable to add log entry to $LogFile.log file. Error message at line $($_.InvocationInfo.ScriptLineNumber): $($_.Exception.Message)"
+    }
+}
+#end function
 
 #region GETSID
 #Get SID of current interactive users
@@ -109,9 +141,14 @@ foreach ($App in $CleanAppList) {
 }
 	
 $AppPayLoad = $AppArray
+Write-LogEntry -Value "`n################Unique Apps Found################"
+Write-LogEntry -Stamp -Value $AppPayLoad
 #endregion APPINVENTORY
 
 #region Find Bad Apps
+
+Write-LogEntry -Value "`n################Unsupport Apps being searched for################"
+Write-LogEntry -Stamp -Value $BadApps
 $BadAppFound = $Null
 $BadAppArray = @()
 
@@ -130,15 +167,17 @@ Foreach ($App in $AppPayLoad) {
 $BadAppPayLoad = $BadAppArray
 
 #Update Event Text Message to include bad apps
-$OutputData = $Null
 $EventText = $EventText + "`n"
 Foreach ($BadApp2 in $BadAppPayload) { 
     $EventText = $EventText + "`n- $($BadApp2.AppName)"
-    $OutputData = $OutputData + "$($BadApp2.AppName),"
 }
+Write-LogEntry -Value "`n################Toast Notification Details################"
+Write-LogEntry -Stamp -Value $EventText
 #endregion
 
 If ($BadAppFound) {
+    Write-LogEntry -Value "`n################Unsupport Apps Found################"
+    Write-LogEntry -Stamp -Value $BadAppPayLoad
 
     #region CUSTOMHANDLER
     #https://docs.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/send-local-toast-other-apps
@@ -232,10 +271,13 @@ If ($BadAppFound) {
     #endregion
 
     #Write-Output for Proactive Remediation
-    Write-Output "$($OutputData)"
+    $BadAppPayLoadOutput = $BadAppPayLoad | ConvertTo-Json
+    Write-Output $BadAppPayLoadOutput
     Exit 1
 }
 else {
+    Write-LogEntry -Value "`n################Unsupport Apps Found################"
+    Write-LogEntry -Stamp -Value "No Bad Apps Found"
     Write-Output "No Bad Apps Found"
     Exit 0
 }
