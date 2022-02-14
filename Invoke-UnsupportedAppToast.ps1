@@ -16,6 +16,7 @@
     Created:     2022-12-Feb
 
     Version history:
+    1.0.1 - (2022-02-14) Logging added
     1.0.0 - (2022-02-12) Script released
 #>
 
