@@ -142,13 +142,13 @@ foreach ($App in $CleanAppList) {
 }
 	
 $AppPayLoad = $AppArray
-Write-LogEntry -Value "`n################Unique Apps Found################"
+Write-LogEntry -Value "################Unique Apps Found################"
 Write-LogEntry -Stamp -Value $AppPayLoad
 #endregion APPINVENTORY
 
 #region Find Bad Apps
 
-Write-LogEntry -Value "`n################Unsupport Apps being searched for################"
+Write-LogEntry -Value "################Unsupport Apps being searched for################"
 Write-LogEntry -Stamp -Value $BadApps
 $BadAppFound = $Null
 $BadAppArray = @()
@@ -172,12 +172,12 @@ $EventText = $EventText + "`n"
 Foreach ($BadApp2 in $BadAppPayload) { 
     $EventText = $EventText + "`n- $($BadApp2.AppName)"
 }
-Write-LogEntry -Value "`n################Toast Notification Details################"
+Write-LogEntry -Value "################Toast Notification Details################"
 Write-LogEntry -Stamp -Value $EventText
 #endregion
 
 If ($BadAppFound) {
-    Write-LogEntry -Value "`n################Unsupport Apps Found################"
+    Write-LogEntry -Value "################Unsupport Apps Found################"
     Write-LogEntry -Stamp -Value $BadAppPayLoad
 
     #region CUSTOMHANDLER
@@ -277,7 +277,7 @@ If ($BadAppFound) {
     Exit 1
 }
 else {
-    Write-LogEntry -Value "`n################Unsupport Apps Found################"
+    Write-LogEntry -Value "################Unsupport Apps Found################"
     Write-LogEntry -Stamp -Value "No Bad Apps Found"
     Write-Output "No Bad Apps Found"
     Exit 0
