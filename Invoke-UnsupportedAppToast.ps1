@@ -134,7 +134,7 @@ $OutputData = $Null
 $EventText = $EventText + "`n"
 Foreach ($BadApp2 in $BadAppPayload) { 
     $EventText = $EventText + "`n- $($BadApp2.AppName)"
-    $OutputData = $OutputData + $BadApp2.AppName
+    $OutputData = $OutputData + "$($BadApp2.AppName),"
 }
 #endregion
 
@@ -232,7 +232,7 @@ If ($BadAppFound) {
     #endregion
 
     #Write-Output for Proactive Remediation
-    Write-Output $OutputData
+    Write-Output "$($OutputData)"
     Exit 1
 }
 else {
