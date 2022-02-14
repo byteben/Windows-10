@@ -49,7 +49,7 @@ $EventTitle = "Unsupported App(s) Found"
 $EventText = "Please uninstall the following applications at your earliest convenience as they pose a security risk to your computer:-"
 $SnoozeTitle = "Set Reminder"
 $SnoozeMessage = "Remind me again in"
-$LogFile = Join-Path -Path $env:TEMP -ChildPath "UnsupportAppsFound.log")
+$LogFile = Join-Path -Path $env:TEMP -ChildPath "UnsupportAppsFound.log"
 #endregion
 
 #region FETCHIMAGE
