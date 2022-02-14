@@ -133,13 +133,13 @@ $BadAppPayLoad = $BadAppArray
 $EventText = $EventText + "`n"
 Foreach ($BadApp2 in $BadAppPayload) { 
     If ($BadApp2.AppVersion -and $BadApp2.AppPublisher) {
-        $EventText = $EventText + "`nℹ️ $($BadApp2.AppName), v$($BadApp2.AppVersion) by $($BadApp2.AppPublisher)"
+        $EventText = $EventText + "`n- $($BadApp2.AppName), v$($BadApp2.AppVersion) by $($BadApp2.AppPublisher)"
     }
     If (-not($BadApp2.AppVersion) -and $BadApp2.AppPublisher) {
-        $EventText = $EventText + "`nℹ️ $($BadApp2.AppName) by $($BadApp2.AppPublisher)"
+        $EventText = $EventText + "`n- $($BadApp2.AppName) by $($BadApp2.AppPublisher)"
     }
     If (-not($BadApp2.AppVersion) -and -not($BadApp2.AppPublisher)) {
-        $EventText = $EventText + "`nℹ️ $($BadApp2.AppName)"
+        $EventText = $EventText + "`n- $($BadApp2.AppName)"
     }
     
 }
