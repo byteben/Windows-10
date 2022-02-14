@@ -49,6 +49,7 @@ $EventTitle = "Unsupported App(s) Found"
 $EventText = "Please uninstall the following applications at your earliest convenience as they pose a security risk to your computer:-"
 $SnoozeTitle = "Set Reminder"
 $SnoozeMessage = "Remind me again in"
+$LogName = "UnsupportAppsFound.log"
 #endregion
 
 #region FETCHIMAGE
@@ -84,7 +85,7 @@ function Write-LogEntry {
         [string]$Value,
         [parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [string]$FileName = "UnsupportedAppsFound.log",
+        [string]$FileName = $($LogName),
         [switch]$Stamp
     )
 
@@ -110,6 +111,12 @@ function Write-LogEntry {
 #end function
 
 #region GETSID
+#region RESETLOG
+If (Test-Path -Path (Join-Path -Path $env:TEMP -ChildPath $("$FileName"))) {
+    Remove-Item (Join-Path -Path $env:TEMP -ChildPath $("$FileName")) -Force | Out-Null
+}
+#endregion
+
 #Get SID of current interactive users
 
 $CurrentLoggedOnUser = (Get-CimInstance win32_computersystem).UserName
