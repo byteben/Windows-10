@@ -142,14 +142,15 @@ foreach ($App in $CleanAppList) {
 }
 	
 $AppPayLoad = $AppArray
+$AppPayLoadLog = $AppPayLoad | Out-String
 Write-LogEntry -Value "################Unique Apps Found################"
-Write-LogEntry -Stamp -Value $AppPayLoad
+Write-LogEntry -Stamp -Value $AppPayLoadLog
 #endregion APPINVENTORY
 
 #region Find Bad Apps
-
+$BadAppsLog = $BadApps | Out-String
 Write-LogEntry -Value "################Unsupport Apps being searched for################"
-Write-LogEntry -Stamp -Value $BadApps
+Write-LogEntry -Stamp -Value $BadAppsLog
 $BadAppFound = $Null
 $BadAppArray = @()
 
@@ -177,8 +178,9 @@ Write-LogEntry -Stamp -Value $EventText
 #endregion
 
 If ($BadAppFound) {
+    $BadAppPayLoadLog = $BadAppPayLoad | Out-String
     Write-LogEntry -Value "################Unsupport Apps Found################"
-    Write-LogEntry -Stamp -Value $BadAppPayLoad
+    Write-LogEntry -Stamp -Value $BadAppPayLoadLog
 
     #region CUSTOMHANDLER
     #https://docs.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/send-local-toast-other-apps
