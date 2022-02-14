@@ -22,7 +22,8 @@
 #region SCRIPTVARIABLES
 
 $BadApps = @(
-    "Adobe Shockwave Player" 
+    "Adobe Shockwave Player"
+    "JavaFX"
     "Java 6"
     "Java SE Development Kit 6"
     "Java(TM) SE Development Kit 6"
