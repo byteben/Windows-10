@@ -232,7 +232,7 @@ If ($BadAppFound) {
     #Write-Output for Proactive Remediation
     $BadAppPayLoadOutput = $BadAppPayLoad | ConvertTo-Json
     Write-Output $BadAppPayLoadOutput
-    Exit 0
+    Exit 1
 }
 else {
     Write-Output "No Bad Apps Found"
