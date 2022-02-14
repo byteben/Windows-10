@@ -44,9 +44,9 @@ $GoodEvening = "Good Evening"
 $ToastImageSource = "https://github.com/byteben/Toast/raw/master/heroimage.jpg" #ToastImage should be  364px x 180px
 $ToastImage = Join-Path -Path $ENV:temp -ChildPath "ToastImage.jpg" #ToastImageSource is downloaded to this location
 $ToastDuration = "long" #ToastDuration: Short = 7s, Long = 25s
-$ToastTitle = "We need to bring to your attention some important information"
-$EventTitle = "Unsupported App(s) Found"
-$EventText = "Please uninstall the following applications at your earliest convenience as they pose a security risk to your computer:-"
+$ToastScenario = "reminder" #ToastScenario: Default | Reminder | Alarm
+$ToastTitle = "Unsupported App(s) Found"
+$ToastText = "Please uninstall the following applications at your earliest convenience as they pose a security risk to your computer:-"
 $SnoozeTitle = "Set Reminder"
 $SnoozeMessage = "Remind me again in"
 $LogFile = Join-Path -Path $env:TEMP -ChildPath "UnsupportAppsFound.log"
@@ -227,9 +227,11 @@ If ($BadAppFound) {
     #region TOAST
     #Get Hour of Day and set Custom Hello
     $Hour = (Get-Date).Hour
-    If ($Hour -lt 12) { $CustomHello = $GoodMorning }
-    ElseIf ($Hour -gt 16) { $CustomHello = $GoodEvening }
-    Else { $CustomHello = $GoodAfternoon }
+    If ($Hour -lt 12) { $CustomHello = $GoodMorning + ". " }
+    ElseIf ($Hour -gt 16) { $CustomHello = $GoodEvening + ". " }
+    Else { $CustomHello = $GoodAfternoon + ". " }
+
+    $CustomHello = $CustomHello + $ToastText
 
     #Load Assemblies
     [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
@@ -237,17 +239,12 @@ If ($BadAppFound) {
 
     #Build XML ToastTemplate 
     [xml]$ToastTemplate = @"
-<toast duration="$ToastDuration" scenario="reminder">
+<toast duration="$ToastDuration" scenario="$ToastScenario">
     <visual>
         <binding template="ToastGeneric">
-            <text>$CustomHello</text>
             <text>$ToastTitle</text>
+            <text>$CustomHello</text>
             <image placement="hero" src="$ToastImage"/>
-            <group>
-                <subgroup>
-                    <text hint-style="title" hint-wrap="true" >$EventTitle</text>
-                </subgroup>
-            </group>
             <group>
                 <subgroup>
                     <text hint-style="body" hint-wrap="true" >$EventText</text>
