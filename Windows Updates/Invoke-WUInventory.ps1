@@ -15,10 +15,13 @@
     Created:     2022-10-April
 
     Version history:
-    1.0.0 - (2022-04-10) Original Release
+    1.0 - (2022-04-10) Original Release
 #>
 
 #region SCRIPTVARIABLES
+
+#Track Script Version in Log Analytics Table
+$ScriptVersion = "PR003"
 
 #Log Analytics Workspace ID
 $CustomerID = ""
@@ -27,7 +30,7 @@ $CustomerID = ""
 $SharedKey = ""
 
 #Custom Log Name
-$LogType = "WUInventory"
+$LogType = "WU_Settings"
 
 # You can use an optional field to specify the timestamp from the data. If the time field is not specified, Azure Monitor assumes the time is the message ingestion time
 # DO NOT DELETE THIS VARIABLE. Recommened keep this blank. 
@@ -36,44 +39,52 @@ $TimeStampField = ""
 #Create Windows Update Settings Array
 #Software\Policies\Microsoft\Windows\WindowsUpdate
 $WUSettingsArray = @()
-$WUSettingsArray += "AutoInstallMinorUpdates"
 $WUSettingsArray += "AutoRestartDeadlinePeriodInDays"
 $WUSettingsArray += "AutoRestartNotificationSchedule"
 $WUSettingsArray += "AutoRestartRequiredNotificationDismissal"
-$WUSettingsArray += "BranchReadinessLevel "
-$WUSettingsArray += "DeferFeatureUpdates "
-$WUSettingsArray += "DeferFeatureUpdatesPeriodInDays "
-$WUSettingsArray += "DeferQualityUpdates "
-$WUSettingsArray += "DeferQualityUpdatesPeriodInDays "
+$WUSettingsArray += "BranchReadinessLevel"
+$WUSettingsArray += "DeferFeatureUpdates"
+$WUSettingsArray += "DeferFeatureUpdatesPeriodInDays"
+$WUSettingsArray += "DeferQualityUpdates"
+$WUSettingsArray += "DeferQualityUpdatesPeriodInDays"
 $WUSettingsArray += "DisableDualScan"
 $WUSettingsArray += "DoNotConnectToWindowsUpdateInternetLocations"
 $WUSettingsArray += "ElevateNonAdmins"
-$WUSettingsArray += "EnableFeaturedSoftware"
 $WUSettingsArray += "EngagedRestartDeadline"
-$WUSettingsArray += "EngagedRestartSnoozeSchedule "
-$WUSettingsArray += "EngagedRestartTransitionSchedule "
-$WUSettingsArray += "IncludeRecommendedUpdates"
-$WUSettingsArray += "NoAUAsDefaultShutdownOption"
-$WUSettingsArray += "NoAUShutdownOption"
-$WUSettingsArray += "NoAutoRebootWithLoggedOnUsers"
-$WUSettingsArray += "NoAutoUpdate"
+$WUSettingsArray += "EngagedRestartSnoozeSchedule"
+$WUSettingsArray += "EngagedRestartTransitionSchedule"
 $WUSettingsArray += "PauseFeatureUpdatesStartTime"
 $WUSettingsArray += "PauseQualityUpdatesStartTime"
-$WUSettingsArray += "RebootRelaunchTimeout"
-$WUSettingsArray += "RebootRelaunchTimeoutEnabled "
-$WUSettingsArray += "RebootWarningTimeout"
-$WUSettingsArray += "RebootWarningTimeoutEnabled "
-$WUSettingsArray += "RescheduleWaitTime"
-$WUSettingsArray += "RescheduleWaitTimeEnabled "
 $WUSettingsArray += "ScheduleImminentRestartWarning"
-$WUSettingsArray += "ScheduleRestartWarning "
-$WUSettingsArray += "SetAutoRestartDeadline "
+$WUSettingsArray += "ScheduleRestartWarning"
+$WUSettingsArray += "SetAutoRestartDeadline"
 $WUSettingsArray += "SetAutoRestartNotificationConfig"
 $WUSettingsArray += "SetAutoRestartNotificationDisable"
-$WUSettingsArray += "SetAutoRestartRequiredNotificationDismissal "
+$WUSettingsArray += "SetAutoRestartRequiredNotificationDismissal"
 $WUSettingsArray += "SetEDURestart"
-$WUSettingsArray += "SetEngagedRestartTransitionSchedule "
-$WUSettingsArray += "SetRestartWarningSchd "
+$WUSettingsArray += "SetEngagedRestartTransitionSchedule"
+$WUSettingsArray += "SetRestartWarningSchd"
+
+#Software\Policies\Microsoft\Windows\WindowsUpdate\AU
+$WUAUSettingsArray = @()
+$WUAUSettingsArray += "AutoInstallMinorUpdates"
+$WUAUSettingsArray += "EnableFeaturedSoftware"
+$WUAUSettingsArray += "IncludeRecommendedUpdates"
+$WUAUSettingsArray += "NoAUAsDefaultShutdownOption"
+$WUAUSettingsArray += "NoAUShutdownOption"
+$WUAUSettingsArray += "NoAutoRebootWithLoggedOnUsers"
+$WUAUSettingsArray += "NoAutoUpdate"
+$WUAUSettingsArray += "RebootRelaunchTimeout"
+$WUAUSettingsArray += "RebootRelaunchTimeoutEnabled"
+$WUAUSettingsArray += "RebootWarningTimeout"
+$WUAUSettingsArray += "RebootWarningTimeoutEnabled"
+$WUAUSettingsArray += "RescheduleWaitTime"
+$WUAUSettingsArray += "RescheduleWaitTimeEnabled"
+$WUAUSettingsArray += "WUServer"
+$WUAUSettingsArray += "WUStatusServer"
+
+#CoManagement Capabilities for WIndows Update Workload
+$CoMgmtArray = @(17, 19, 21, 23, 25, 27, 29, 31, 49, 51, 53, 55, 57, 59, 61, 63, 81, 83, 85, 87, 89, 91, 93, 95, 113, 115, 117, 119, 121, 123, 125, 127, 145, 147, 149, 151, 153, 155, 157, 159, 177, 179, 181, 183, 185, 187, 189, 191, 209, 211, 213, 215, 217, 219, 221, 223, 241, 243, 245, 247, 249, 251, 253, 255)
 
 #endregion
 
@@ -110,6 +121,9 @@ $DeviceName = (Get-ComputerInfo).CsName
 #Get OS Information
 $ComputerOSVersion = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\cimv2).Version
 $ComputerOSBuild = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\cimv2).BuildNumber
+
+#Get Default AU Service
+$DefaultAUService = (New-Object -ComObject "Microsoft.Update.ServiceManager").services | Where-Object { $_.IsDefaultAUService -eq 'True' } | Select-Object -ExpandProperty Name
 
 #endregion
 
@@ -164,7 +178,7 @@ Function Send-LogAnalyticsData($CustomerID, $SharedKey, $Body, $LogType) {
 	
     $Response = Invoke-WebRequest -Uri $uri -Method $Method -ContentType $ContentType -Headers $Headers -Body $Body -UseBasicParsing
     $StatusMessage = "$($Response.StatusCode) : $($PayLoadSize)"
-    return $StatusMessage
+    return "$StatusMessage"
 }
 
 Function Get-RegSetting {
@@ -180,11 +194,22 @@ Function Get-RegSetting {
             Return $RegSettingValue
         }
         else {
-            Return "NotSet"
+            If ($RegSetting -in ("WUServer", "WUStatusServer")) {
+                Return ""
+            }
+            else {
+                Return 0
+            }
         }
     }
     Catch {
-        Return "NotSet"
+        #Not returning caught errors
+        If ($RegSetting -in ("WUServer", "WUStatusServer")) {
+            Return ""
+        }
+        else {
+            Return 0
+        }
     }
 }
 
@@ -192,19 +217,30 @@ Function Get-RegSetting {
 
 #region Workspace
 
-$WUSettingPayload = $Null
-$WUSettingPayload = @()
-
 #Build WindowsUpdate Regsitry Key Inventory
 $WUSettingPayloadInventory = $Null
 $WUSettingPayloadInventory = New-Object -TypeName PSObject
 
 #Build Device Inventory
+$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ScriptVersion -Value $ScriptVersion -Force
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name DeviceName -Value $DeviceName -Force
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ManagedDeviceID -Value $ManagedDeviceID -Force
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name AzureADDeviceID -Value $AzureADDeviceID -Force
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ComputerOSVersion -Value $ComputerOSVersion -Force
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ComputerOSBuild -Value $ComputerOSBuild -Force
+$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name DefaultAUService -Value $DefaultAUService -Force
+
+#Get CoManagement State and Workload
+$CoMgmtRegKey = "HKLM:\Software\Microsoft\CCM"
+$CoMgmtSetting = "CoManagementFlags"
+$CoMgmtValue = Get-RegSetting -RegKey $CoMgmtRegKey -RegSetting $CoMgmtSetting
+If ($CoMgmtValue -in $CoMgmtArray) {
+    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $True -Force
+}
+else {
+    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $False -Force
+}
+$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtValue -Value $CoMgmtValue -Force
 
 #Get Registry Values for Software\Policies\Microsoft\Windows\WindowsUpdate
 $WURegKey = "HKLM:Software\Policies\Microsoft\Windows\WindowsUpdate"
@@ -213,7 +249,16 @@ ForEach ($WUSetting in $WUSettingsArray) {
     $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name $WUSetting -Value $RegValue -Force
 }
 
+#Get Registry Values for Software\Policies\Microsoft\Windows\WindowsUpdate
+$WUAURegKey = "HKLM:Software\Policies\Microsoft\Windows\WindowsUpdate\AU"
+ForEach ($WUAUSetting in $WUAUSettingsArray) {
+    $RegValue = Get-RegSetting -RegKey $WUAURegKey -RegSetting $WUAUSetting
+    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name $WUAUSetting -Value $RegValue -Force
+}
+
 #Build Payload Array
+$WUSettingPayload = $Null
+$WUSettingPayload = @()
 $WUSettingPayload += $WUSettingPayloadInventory
 
 #Prepare Array for Upload
@@ -224,7 +269,7 @@ Write-Output "Sending Payload:"
 Write-Output $PayloadJson
 
 #Upload Data
-$ResponseWUInventory = Send-LogAnalyticsData -CustomerID $customerID -SharedKey $SharedKey -Body ([System.Text.Encoding]::UTF8.GetBytes($PayloadJson)) -LogType $LogType
+$ResponseWUInventory = Send-LogAnalyticsData -CustomerID $CustomerID -SharedKey $SharedKey -Body ([System.Text.Encoding]::UTF8.GetBytes($PayloadJson)) -LogType $LogType
 $ResponseWUInventory
 
 #Status Report
@@ -232,7 +277,7 @@ $Date = Get-Date -Format "dd-MM HH:mm"
 $OutputMessage = "InventoryDate: $Date "
 
 if ($ResponseWUInventory) {
-    if ($Response -match "200") {
+    if ($ResponseWUInventory -like "200*") {
         $OutputMessage = $OutputMessage + " WUInventory:OK"
     }
     else {
