@@ -64,6 +64,8 @@ $WUSettingsArray += "SetAutoRestartRequiredNotificationDismissal"
 $WUSettingsArray += "SetEDURestart"
 $WUSettingsArray += "SetEngagedRestartTransitionSchedule"
 $WUSettingsArray += "SetRestartWarningSchd"
+$WUSettingsArray += "WUServer"
+$WUSettingsArray += "WUStatusServer"
 
 #Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 $WUAUSettingsArray = @()
@@ -80,8 +82,6 @@ $WUAUSettingsArray += "RebootWarningTimeout"
 $WUAUSettingsArray += "RebootWarningTimeoutEnabled"
 $WUAUSettingsArray += "RescheduleWaitTime"
 $WUAUSettingsArray += "RescheduleWaitTimeEnabled"
-$WUAUSettingsArray += "WUServer"
-$WUAUSettingsArray += "WUStatusServer"
 
 #CoManagement Capabilities for WIndows Update Workload
 $CoMgmtArray = @(17, 19, 21, 23, 25, 27, 29, 31, 49, 51, 53, 55, 57, 59, 61, 63, 81, 83, 85, 87, 89, 91, 93, 95, 113, 115, 117, 119, 121, 123, 125, 127, 145, 147, 149, 151, 153, 155, 157, 159, 177, 179, 181, 183, 185, 187, 189, 191, 209, 211, 213, 215, 217, 219, 221, 223, 241, 243, 245, 247, 249, 251, 253, 255)
@@ -236,6 +236,9 @@ $CoMgmtSetting = "CoManagementFlags"
 $CoMgmtValue = Get-RegSetting -RegKey $CoMgmtRegKey -RegSetting $CoMgmtSetting
 If ($CoMgmtValue -in $CoMgmtArray) {
     $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $true -Force
+}
+else {
+    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $Null -Force
 }
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtValue -Value $CoMgmtValue -Force
 
