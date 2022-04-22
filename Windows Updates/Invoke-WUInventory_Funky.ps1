@@ -328,11 +328,11 @@ $Date = Get-Date -Format "dd-MM HH:mm"
 $OutputMessage = "InventoryDate: $Date "
 
 if ($ResponseInventory) {
-    if ($ResponseWUInventory -like "200*") {
-        $OutputMessage = $OutputMessage + " WUInventory:OK"
+    if ($ResponseInventory -like "200*") {
+        $OutputMessage = $OutputMessage + " Inventory:OK"
     }
     else {
-        $OutputMessage = $OutputMessage + " WUInventory:Fail"
+        $OutputMessage = $OutputMessage + " Inventory:Fail"
     }
 }
 Write-Output $OutputMessage
