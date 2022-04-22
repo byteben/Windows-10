@@ -289,7 +289,7 @@ $JoinDate = Get-AzureADJoinDate
 $DelayDate = $JoinDate.AddDays(1)
 $CompareDate = ($DelayDate - $JoinDate)
 if ($CompareDate.Days -ge 1) {
-    Write-Output "Randomzing execution time"
+    #Write-Output "Randomzing execution time"
     #$ExecuteInSeconds = (Get-Random -Maximum 3000 -Minimum 1)
     #Start-Sleep -Seconds $ExecuteInSeconds
 }
@@ -323,19 +323,15 @@ catch {
     $OutputMessage = $OutPutMessage + "Inventory:Fail " + $ResponseInventory + $ResponseMessage
 }
 
-#Status Report
-$Date = Get-Date -Format "dd-MM HH:mm"
-$OutputMessage = "InventoryDate: $Date "
-
-if ($ResponseInventory) {
-    if ($ResponseInventory -like "200*") {
-        $OutputMessage = $OutputMessage + " Inventory:OK"
-    }
-    else {
-        $OutputMessage = $OutputMessage + " Inventory:Fail"
-    }
+# Check status and report to Proactive Remediations
+if ($ResponseInventory -match "200") {
+    Write-Output $OutputMessage
+    Exit 0
 }
-Write-Output $OutputMessage
+else {
+    Write-Output "Error: $($ResponseInventory), Message: $($ResponseMessage)"
+    Exit 1
+}
 
 #endregion
 #>
