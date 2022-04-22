@@ -4,7 +4,8 @@
     {
       "type": 1,
       "content": {
-        "json": "\n<img src=\"https://msendpointmgr.com/wp-content/uploads/2020/04/MSEndpoingMgrLogo.png\" height=\"150\">\n\n## Windows Update Device Settings\n---\n\nWelcome to the Windows Update Settings workbook. Microsoft have put some effort into highlighting the legacy Windows Update settings that should not be configured on your Windows 10/11 devices. This workbook will help you to identify if there are any legacy settings in your environment that may be causing undesirable outcomes for Windows Update compliance.\n\nRead more here https://techcommunity.microsoft.com/t5/windows-it-pro-blog/why-you-shouldn-t-set-these-25-windows-policies/ba-p/3066178"
+        "json": "\n
+<img src=\"https://msendpointmgr.com/wp-content/uploads/2020/04/MSEndpoingMgrLogo.png\" height=\"150\">\n\n## Windows Update Device Settings\n---\n\nWelcome to the Windows Update Settings workbook. Microsoft have put some effort into highlighting the legacy Windows Update settings that should not be configured on your Windows 10/11 devices. This workbook will help you to identify if there are any legacy settings in your environment that may be causing undesirable outcomes for Windows Update compliance.\n\nRead more here https://techcommunity.microsoft.com/t5/windows-it-pro-blog/why-you-shouldn-t-set-these-25-windows-policies/ba-p/3066178"
       },
       "name": "text - 2"
     },
@@ -93,22 +94,22 @@
                 "style": "bignumber"
               }
             },
-            "customWidth": "15",
+            "customWidth": "20",
             "name": "Devices Reporting In",
             "styleSettings": {
-              "maxWidth": "15"
+              "maxWidth": "20"
             }
           },
           {
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WU_Settings_CL\r\n| where \r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| summarize Windows10 = countif(ComputerOSVersion_s startswith \"10.0.1\"), Windows11 = countif(ComputerOSVersion_s startswith \"10.0.2\")\r\n\r\n",
+              "query": "WU_Settings_CL\r\n| where \r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| summarize Windows10 = countif(ComputerOSVersion_s startswith \"10.0.1\"), Windows11 = countif(ComputerOSVersion_s startswith \"10.0.2\")\r\n| extend OSEC = pack(\"Windows10\", Windows10, \"Windows11\", Windows11)\r\n| mvexpand kind = array OSEC\r\n| project OS = tostring(OSEC[0]), Value = toint(OSEC[1])\r\n\r\n",
               "size": 3,
               "title": "Windows OS Distribution",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
-              "visualization": "table",
+              "visualization": "piechart",
               "tileSettings": {
                 "showBorder": false,
                 "titleContent": {
@@ -131,10 +132,10 @@
                 }
               }
             },
-            "customWidth": "33",
+            "customWidth": "40",
             "name": "query - 7",
             "styleSettings": {
-              "maxWidth": "33"
+              "maxWidth": "40"
             }
           },
           {
@@ -151,10 +152,10 @@
               "resourceType": "microsoft.operationalinsights/workspaces",
               "visualization": "piechart"
             },
-            "customWidth": "42",
+            "customWidth": "40",
             "name": "query - 8",
             "styleSettings": {
-              "maxWidth": "42"
+              "maxWidth": "40"
             }
           },
           {
@@ -169,12 +170,12 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = DisableDualScan_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n",
+              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| summarize Enabled = countif(DisableDualScan_d == 1), NotEnabled = countif(DisableDualScan_d == 0)\r\n| extend Result = pack(\"Enabled\", Enabled, \"NotEnabled\", NotEnabled)\r\n| mvexpand kind = array Result\r\n| project Result = tostring(Result[0]), Value = toint(Result[1])\r\n\r\n\r\n\r\n\r\n\r\n",
               "size": 3,
               "title": "DisableDualScan",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
-              "visualization": "table",
+              "visualization": "piechart",
               "gridSettings": {
                 "formatters": [
                   {
@@ -227,6 +228,18 @@
               "graphSettings": {
                 "type": 0
               },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "Enabled",
+                    "color": "red"
+                  },
+                  {
+                    "seriesName": "NotEnabled",
+                    "color": "green"
+                  }
+                ]
+              },
               "mapSettings": {
                 "locInfo": "LatLong",
                 "sizeSettings": "DeviceTotal",
@@ -251,12 +264,12 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (NoAutoUpdate_d == 1 or NoAutoUpdate_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = NoAutoUpdate_d\r\n| order by RegValue\r\n\r\n\r\n\r\n",
+              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (NoAutoUpdate_d == 1 or NoAutoUpdate_d == 0)\r\n| summarize Enabled = countif(NoAutoUpdate_d == 1), NotEnabled = countif(NoAutoUpdate_d == 0)\r\n| extend Result = pack(\"Enabled\", Enabled, \"NotEnabled\", NotEnabled)\r\n| mvexpand kind = array Result\r\n| project Result = tostring(Result[0]), Value = toint(Result[1])\r\n\r\n",
               "size": 3,
-              "title": "NoAUtoUpdate",
+              "title": "NoAutoUpdate",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
-              "visualization": "table",
+              "visualization": "piechart",
               "gridSettings": {
                 "formatters": [
                   {
@@ -287,6 +300,18 @@
               },
               "graphSettings": {
                 "type": 0
+              },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "NotEnabled",
+                    "color": "green"
+                  },
+                  {
+                    "seriesName": "Enabled",
+                    "color": "red"
+                  }
+                ]
               },
               "mapSettings": {
                 "locInfo": "LatLong",
@@ -312,12 +337,12 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DoNotConnectToWindowsUpdateInternetLocations_d == 1 or DoNotConnectToWindowsUpdateInternetLocations_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = DoNotConnectToWindowsUpdateInternetLocations_d\r\n| order by RegValue\r\n\r\n\r\n\r\n",
+              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DoNotConnectToWindowsUpdateInternetLocations_d == 1 or DoNotConnectToWindowsUpdateInternetLocations_d == 0)\r\n| summarize Enabled = countif(DoNotConnectToWindowsUpdateInternetLocations_d == 1), NotEnabled = countif(DoNotConnectToWindowsUpdateInternetLocations_d == 0)\r\n| extend Result = pack(\"Enabled\", Enabled, \"NotEnabled\", NotEnabled)\r\n| mvexpand kind = array Result\r\n| project Result = tostring(Result[0]), Value = toint(Result[1])\r\n\r\n\r\n\r\n\r\n\r\n",
               "size": 3,
               "title": "DoNotConnectToWindowsUpdateInternetLocations",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
-              "visualization": "table",
+              "visualization": "piechart",
               "gridSettings": {
                 "formatters": [
                   {
@@ -349,6 +374,18 @@
               "graphSettings": {
                 "type": 0
               },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "NotEnabled",
+                    "color": "green"
+                  },
+                  {
+                    "seriesName": "Enabled",
+                    "color": "red"
+                  }
+                ]
+              },
               "mapSettings": {
                 "locInfo": "LatLong",
                 "sizeSettings": "DeviceTotal",
@@ -365,6 +402,288 @@
             },
             "customWidth": "30",
             "name": "query - 9 - Copy",
+            "styleSettings": {
+              "maxWidth": "33"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = DisableDualScan_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n\r\n",
+              "size": 3,
+              "title": "DisableDualScan",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "RegValue",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "1",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DisableDualScan",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "1",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "tileSettings": {
+                "showBorder": false
+              },
+              "graphSettings": {
+                "type": 0
+              },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "Enabled",
+                    "color": "redBright"
+                  },
+                  {
+                    "seriesName": "NotEnabled",
+                    "color": "green"
+                  }
+                ]
+              },
+              "mapSettings": {
+                "locInfo": "LatLong",
+                "sizeSettings": "DeviceTotal",
+                "sizeAggregation": "Sum",
+                "legendMetric": "DeviceTotal",
+                "legendAggregation": "Sum",
+                "itemColorSettings": {
+                  "type": "heatmap",
+                  "colorAggregation": "Sum",
+                  "nodeColorField": "DeviceTotal",
+                  "heatmapPalette": "greenRed"
+                }
+              }
+            },
+            "customWidth": "30",
+            "name": "query - 9 - Copy",
+            "styleSettings": {
+              "maxWidth": "33"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (NoAutoUpdate_d == 1 or NoAutoUpdate_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = NoAutoUpdate_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n\r\n",
+              "size": 3,
+              "title": "NoAutoUpdate",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "RegValue",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "1",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DisableDualScan",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "1",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "tileSettings": {
+                "showBorder": false
+              },
+              "graphSettings": {
+                "type": 0
+              },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "Enabled",
+                    "color": "redBright"
+                  },
+                  {
+                    "seriesName": "NotEnabled",
+                    "color": "green"
+                  }
+                ]
+              },
+              "mapSettings": {
+                "locInfo": "LatLong",
+                "sizeSettings": "DeviceTotal",
+                "sizeAggregation": "Sum",
+                "legendMetric": "DeviceTotal",
+                "legendAggregation": "Sum",
+                "itemColorSettings": {
+                  "type": "heatmap",
+                  "colorAggregation": "Sum",
+                  "nodeColorField": "DeviceTotal",
+                  "heatmapPalette": "greenRed"
+                }
+              }
+            },
+            "customWidth": "30",
+            "name": "query - 9 - Copy - Copy",
+            "styleSettings": {
+              "maxWidth": "33"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "WU_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DoNotConnectToWindowsUpdateInternetLocations_d == 1 or DoNotConnectToWindowsUpdateInternetLocations_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = DoNotConnectToWindowsUpdateInternetLocations_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n\r\n",
+              "size": 3,
+              "title": "DoNotConnectToWindowsUpdateInternetLocations",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "RegValue",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "1",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DisableDualScan",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "1",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "tileSettings": {
+                "showBorder": false
+              },
+              "graphSettings": {
+                "type": 0
+              },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "Enabled",
+                    "color": "redBright"
+                  },
+                  {
+                    "seriesName": "NotEnabled",
+                    "color": "green"
+                  }
+                ]
+              },
+              "mapSettings": {
+                "locInfo": "LatLong",
+                "sizeSettings": "DeviceTotal",
+                "sizeAggregation": "Sum",
+                "legendMetric": "DeviceTotal",
+                "legendAggregation": "Sum",
+                "itemColorSettings": {
+                  "type": "heatmap",
+                  "colorAggregation": "Sum",
+                  "nodeColorField": "DeviceTotal",
+                  "heatmapPalette": "greenRed"
+                }
+              }
+            },
+            "customWidth": "30",
+            "name": "query - 9 - Copy - Copy",
             "styleSettings": {
               "maxWidth": "33"
             }
@@ -2913,7 +3232,10 @@
           {
             "type": 1,
             "content": {
-              "json": "```\r\n<#\r\n.SYNOPSIS\r\n    Inventory Windows Update device settings\r\n.DESCRIPTION\r\n    This script is designed to be run as a Proactive Remediation. \r\n    Registry keys are inventoried on the device and uploaded to Log Analytics. \r\n    Admins are able visualise the Windows Update settings in force across their devices and understand if legacy settings or GPO's are having an undesirable effect on the device Windows Update experience\r\n.EXAMPLE\r\n    Invoke-WUInventory.ps1 (Required to run as System or Administrator) \r\n.NOTES\r\n    FileName:    Invoke-WUInventory.ps1  \r\n    Author:      Ben Whitmore\r\n    Contributor: Maurice Daly\r\n    Contact:     @byteben\r\n    Created:     2022-10-April\r\n\r\n    Version history:\r\n    1.0 - (2022-04-10) Original Release\r\n#>\r\n\r\n#region SCRIPTVARIABLES\r\n\r\n#Track Script Version in Log Analytics Table\r\n$ScriptVersion = \"PR003\"\r\n\r\n#Log Analytics Workspace ID\r\n$CustomerID = \"<YOUR CUSTOMERID HERE>\"\r\n\r\n#Log Analytics Workspace Primary Key\r\n$SharedKey = \"<YOUR SHAREDKEY HERE>\"\r\n\r\n#Custom Log Name\r\n$LogType = \"WU_Settings\"\r\n\r\n# You can use an optional field to specify the timestamp from the data. If the time field is not specified, Azure Monitor assumes the time is the message ingestion time\r\n# DO NOT DELETE THIS VARIABLE. Recommened keep this blank. \r\n$TimeStampField = \"\"\r\n\r\n#Create Windows Update Settings Array\r\n#Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\r\n$WUSettingsArray = @()\r\n$WUSettingsArray += \"AutoRestartDeadlinePeriodInDays\"\r\n$WUSettingsArray += \"AutoRestartNotificationSchedule\"\r\n$WUSettingsArray += \"AutoRestartRequiredNotificationDismissal\"\r\n$WUSettingsArray += \"BranchReadinessLevel\"\r\n$WUSettingsArray += \"DeferFeatureUpdates\"\r\n$WUSettingsArray += \"DeferFeatureUpdatesPeriodInDays\"\r\n$WUSettingsArray += \"DeferQualityUpdates\"\r\n$WUSettingsArray += \"DeferQualityUpdatesPeriodInDays\"\r\n$WUSettingsArray += \"DisableDualScan\"\r\n$WUSettingsArray += \"DoNotConnectToWindowsUpdateInternetLocations\"\r\n$WUSettingsArray += \"ElevateNonAdmins\"\r\n$WUSettingsArray += \"EngagedRestartDeadline\"\r\n$WUSettingsArray += \"EngagedRestartSnoozeSchedule\"\r\n$WUSettingsArray += \"EngagedRestartTransitionSchedule\"\r\n$WUSettingsArray += \"PauseFeatureUpdatesStartTime\"\r\n$WUSettingsArray += \"PauseQualityUpdatesStartTime\"\r\n$WUSettingsArray += \"ScheduleImminentRestartWarning\"\r\n$WUSettingsArray += \"ScheduleRestartWarning\"\r\n$WUSettingsArray += \"SetAutoRestartDeadline\"\r\n$WUSettingsArray += \"SetAutoRestartNotificationConfig\"\r\n$WUSettingsArray += \"SetAutoRestartNotificationDisable\"\r\n$WUSettingsArray += \"SetAutoRestartRequiredNotificationDismissal\"\r\n$WUSettingsArray += \"SetEDURestart\"\r\n$WUSettingsArray += \"SetEngagedRestartTransitionSchedule\"\r\n$WUSettingsArray += \"SetRestartWarningSchd\"\r\n\r\n#Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\r\n$WUAUSettingsArray = @()\r\n$WUAUSettingsArray += \"AutoInstallMinorUpdates\"\r\n$WUAUSettingsArray += \"EnableFeaturedSoftware\"\r\n$WUAUSettingsArray += \"IncludeRecommendedUpdates\"\r\n$WUAUSettingsArray += \"NoAUAsDefaultShutdownOption\"\r\n$WUAUSettingsArray += \"NoAUShutdownOption\"\r\n$WUAUSettingsArray += \"NoAutoRebootWithLoggedOnUsers\"\r\n$WUAUSettingsArray += \"NoAutoUpdate\"\r\n$WUAUSettingsArray += \"RebootRelaunchTimeout\"\r\n$WUAUSettingsArray += \"RebootRelaunchTimeoutEnabled\"\r\n$WUAUSettingsArray += \"RebootWarningTimeout\"\r\n$WUAUSettingsArray += \"RebootWarningTimeoutEnabled\"\r\n$WUAUSettingsArray += \"RescheduleWaitTime\"\r\n$WUAUSettingsArray += \"RescheduleWaitTimeEnabled\"\r\n$WUAUSettingsArray += \"WUServer\"\r\n$WUAUSettingsArray += \"WUStatusServer\"\r\n\r\n#CoManagement Capabilities for WIndows Update Workload\r\n$CoMgmtArray = @(17, 19, 21, 23, 25, 27, 29, 31, 49, 51, 53, 55, 57, 59, 61, 63, 81, 83, 85, 87, 89, 91, 93, 95, 113, 115, 117, 119, 121, 123, 125, 127, 145, 147, 149, 151, 153, 155, 157, 159, 177, 179, 181, 183, 185, 187, 189, 191, 209, 211, 213, 215, 217, 219, 221, 223, 241, 243, 245, 247, 249, 251, 253, 255)\r\n\r\n#endregion\r\n\r\n#region Initialize\r\n\r\n# Enable TLS 1.2 support \r\n[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\r\n\r\n#Get Intune DeviceID and ManagedDeviceName\r\nif (@(Get-ChildItem HKLM:SOFTWARE\\Microsoft\\Enrollments\\ -Recurse | Where-Object { $_.PSChildName -eq 'MS DM Server' })) {\r\n    $MSDMServerInfo = Get-ChildItem HKLM:SOFTWARE\\Microsoft\\Enrollments\\ -Recurse | Where-Object { $_.PSChildName -eq 'MS DM Server' }\r\n    $ManagedDeviceInfo = Get-ItemProperty -LiteralPath \"Registry::$($MSDMServerInfo)\"\r\n}\r\n$ManagedDeviceID = $ManagedDeviceInfo.EntDMID\r\n\r\n#Get AAD DeviceID\r\n# Define Cloud Domain Join information registry path\r\n$AzureADJoinInfoRegistryKeyPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\"\r\n\t\t\r\n# Retrieve the child key name that is the thumbprint of the machine certificate containing the device identifier guid\r\n$AzureADJoinInfoThumbprint = Get-ChildItem -Path $AzureADJoinInfoRegistryKeyPath | Select-Object -ExpandProperty \"PSChildName\"\r\nif (-not ($AzureADJoinInfoThumbprint -eq $null)) {\r\n    # Retrieve the machine certificate based on thumbprint from registry key\r\n    $AzureADJoinCertificate = Get-ChildItem -Path \"Cert:\\LocalMachine\\My\" -Recurse | Where-Object { $PSItem.Thumbprint -eq $AzureADJoinInfoThumbprint }\r\n    if (-not ($AzureADJoinCertificate -eq $null)) {\r\n        # Determine the device identifier from the subject name\r\n        $AzureADDeviceID = ($AzureADJoinCertificate | Select-Object -ExpandProperty \"Subject\") -replace \"CN=\", \"\"\r\n    }\r\n}\r\n\r\n#Get Computer Name\r\n$DeviceName = (Get-ComputerInfo).CsName\r\n\r\n#Get OS Information\r\n$ComputerOSVersion = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\\cimv2).Version\r\n$ComputerOSBuild = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\\cimv2).BuildNumber\r\n\r\n#Get Default AU Service\r\n$DefaultAUService = (New-Object -ComObject \"Microsoft.Update.ServiceManager\").services | Where-Object { $_.IsDefaultAUService -eq 'True' } | Select-Object -ExpandProperty Name\r\n\r\n#endregion\r\n\r\n#region Functions\r\n\r\n# Function to create the authorization signature\r\nFunction New-Signature ($customerID, $SharedKey, $Date, $ContentLength, $Method, $ContentType, $Resource) {\r\n    $xHeaders = \"x-ms-date:\" + $Date\r\n    $stringToHash = $Method + \"`n\" + $ContentLength + \"`n\" + $ContentType + \"`n\" + $xHeaders + \"`n\" + $Resource\r\n\t\r\n    $bytesToHash = [Text.Encoding]::UTF8.GetBytes($stringToHash)\r\n    $keyBytes = [Convert]::FromBase64String($sharedKey)\r\n\t\r\n    $sha256 = New-Object System.Security.Cryptography.HMACSHA256\r\n    $sha256.Key = $keyBytes\r\n    $calculatedHash = $sha256.ComputeHash($bytesToHash)\r\n    $encodedHash = [Convert]::ToBase64String($calculatedHash)\r\n    $authorization = 'SharedKey {0}:{1}' -f $customerId, $encodedHash\r\n    return $authorization\r\n}\r\n\r\n# Function to create and post the request\r\nFunction Send-LogAnalyticsData($CustomerID, $SharedKey, $Body, $LogType) {\r\n    $Method = \"POST\"\r\n    $ContentType = \"application/json\"\r\n    $Resource = \"/api/logs\"\r\n    $rfc1123date = [DateTime]::UtcNow.ToString(\"r\")\r\n    $ContentLength = $Body.Length\r\n    $signature = New-Signature `\r\n        -customerId $customerId `\r\n        -sharedKey $sharedKey `\r\n        -date $rfc1123date `\r\n        -ContentLength $ContentLength `\r\n        -Method $Method `\r\n        -ContentType $ContentType `\r\n        -Resource $Resource\r\n    $uri = \"https://\" + $CustomerID + \".ods.opinsights.azure.com\" + $Resource + \"?api-version=2016-04-01\"\r\n\t\r\n    #validate that payload data does not exceed limits\r\n    if ($Body.Length -gt (31.9 * 1024 * 1024)) {\r\n        throw (\"Upload payload is too big and exceed the 32Mb limit for a single upload. Please reduce the payload size. Current payload size is: \" + ($Body.Length / 1024 / 1024).ToString(\"#.#\") + \"Mb\")\r\n    }\r\n\t\r\n    $PayLoadSize = (\"Upload payload size is \" + ($Body.Length / 1024).ToString(\"#.#\") + \"Kb \")\r\n\t\r\n    $Headers = @{\r\n        \"Authorization\"        = $signature;\r\n        \"Log-Type\"             = $logType;\r\n        \"x-ms-date\"            = $rfc1123date;\r\n        \"time-generated-field\" = $TimeStampField;\r\n    }\r\n\t\r\n    $Response = Invoke-WebRequest -Uri $uri -Method $Method -ContentType $ContentType -Headers $Headers -Body $Body -UseBasicParsing\r\n    $StatusMessage = \"$($Response.StatusCode) : $($PayLoadSize)\"\r\n    return \"$StatusMessage\"\r\n}\r\n\r\nFunction Get-RegSetting {\r\n    param (\r\n        [parameter(Mandatory = $True)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$RegKey,\r\n        [string]$RegSetting\r\n    )\r\n    Try {\r\n        $RegSettingValue = Get-ItemPropertyValue -Path $RegKey -Name $RegSetting -ErrorAction Stop\r\n        If (-not ($RegSettingValue -eq $Null)) {\r\n            Return $RegSettingValue\r\n        }\r\n        else {\r\n            If ($RegSetting -in (\"WUServer\", \"WUStatusServer\")) {\r\n                Return \"\"\r\n            }\r\n            else {\r\n                Return 0\r\n            }\r\n        }\r\n    }\r\n    Catch {\r\n        #Not returning caught errors\r\n        If ($RegSetting -in (\"WUServer\", \"WUStatusServer\")) {\r\n            Return \"\"\r\n        }\r\n        else {\r\n            Return 0\r\n        }\r\n    }\r\n}\r\n\r\n#endregion\r\n\r\n#region Workspace\r\n\r\n#Build WindowsUpdate Regsitry Key Inventory\r\n$WUSettingPayloadInventory = $Null\r\n$WUSettingPayloadInventory = New-Object -TypeName PSObject\r\n\r\n#Build Device Inventory\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ScriptVersion -Value $ScriptVersion -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name DeviceName -Value $DeviceName -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ManagedDeviceID -Value $ManagedDeviceID -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name AzureADDeviceID -Value $AzureADDeviceID -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ComputerOSVersion -Value $ComputerOSVersion -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ComputerOSBuild -Value $ComputerOSBuild -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name DefaultAUService -Value $DefaultAUService -Force\r\n\r\n#Get CoManagement State and Workload\r\n$CoMgmtRegKey = \"HKLM:\\Software\\Microsoft\\CCM\"\r\n$CoMgmtSetting = \"CoManagementFlags\"\r\n$CoMgmtValue = Get-RegSetting -RegKey $CoMgmtRegKey -RegSetting $CoMgmtSetting\r\nIf ($CoMgmtValue -in $CoMgmtArray) {\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $True -Force\r\n}\r\nelse {\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $False -Force\r\n}\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtValue -Value $CoMgmtValue -Force\r\n\r\n#Get Registry Values for Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\r\n$WURegKey = \"HKLM:Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\"\r\nForEach ($WUSetting in $WUSettingsArray) {\r\n    $RegValue = Get-RegSetting -RegKey $WURegKey -RegSetting $WUSetting\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name $WUSetting -Value $RegValue -Force\r\n}\r\n\r\n#Get Registry Values for Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\r\n$WUAURegKey = \"HKLM:Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\"\r\nForEach ($WUAUSetting in $WUAUSettingsArray) {\r\n    $RegValue = Get-RegSetting -RegKey $WUAURegKey -RegSetting $WUAUSetting\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name $WUAUSetting -Value $RegValue -Force\r\n}\r\n\r\n#Build Payload Array\r\n$WUSettingPayload = $Null\r\n$WUSettingPayload = @()\r\n$WUSettingPayload += $WUSettingPayloadInventory\r\n\r\n#Prepare Array for Upload\r\n$PayloadJson = $WUSettingPayload | ConvertTo-Json\r\n\r\n#Write upload intent to console\r\nWrite-Output \"Sending Payload:\"\r\nWrite-Output $PayloadJson\r\n\r\n#Upload Data\r\n$ResponseWUInventory = Send-LogAnalyticsData -CustomerID $CustomerID -SharedKey $SharedKey -Body ([System.Text.Encoding]::UTF8.GetBytes($PayloadJson)) -LogType $LogType\r\n$ResponseWUInventory\r\n\r\n#Status Report\r\n$Date = Get-Date -Format \"dd-MM HH:mm\"\r\n$OutputMessage = \"InventoryDate: $Date \"\r\n\r\nif ($ResponseWUInventory) {\r\n    if ($ResponseWUInventory -like \"200*\") {\r\n        $OutputMessage = $OutputMessage + \" WUInventory:OK\"\r\n    }\r\n    else {\r\n        $OutputMessage = $OutputMessage + \" WUInventory:Fail\"\r\n    }\r\n}\r\nWrite-Output $OutputMessage\r\n\r\n#endregion\r\n#>\r\n```"
+              "json": "```\r\n
+    <#\r\n.SYNOPSIS\r\n    Inventory Windows Update device settings\r\n.DESCRIPTION\r\n    This script is designed to be run as a Proactive Remediation. \r\n    Registry keys are inventoried on the device and uploaded to Log Analytics. \r\n    Admins are able visualise the Windows Update settings in force across their devices and understand if legacy settings or GPO's are having an undesirable effect on the device Windows Update experience\r\n.EXAMPLE\r\n    Invoke-WUInventory.ps1 (Required to run as System or Administrator) \r\n.NOTES\r\n    FileName:    Invoke-WUInventory.ps1  \r\n    Author:      Ben Whitmore\r\n    Contributor: Maurice Daly\r\n    Contact:     @byteben\r\n    Created:     2022-10-April\r\n\r\n    Version history:\r\n    1.0 - (2022-04-10) Original Release\r\n#>\r\n\r\n#region SCRIPTVARIABLES\r\n\r\n#Track Script Version in Log Analytics Table\r\n$ScriptVersion = \"PR003\"\r\n\r\n#Log Analytics Workspace ID\r\n$CustomerID = \"
+        <YOUR CUSTOMERID HERE>\"\r\n\r\n#Log Analytics Workspace Primary Key\r\n$SharedKey = \"
+            <YOUR SHAREDKEY HERE>\"\r\n\r\n#Custom Log Name\r\n$LogType = \"WU_Settings\"\r\n\r\n# You can use an optional field to specify the timestamp from the data. If the time field is not specified, Azure Monitor assumes the time is the message ingestion time\r\n# DO NOT DELETE THIS VARIABLE. Recommened keep this blank. \r\n$TimeStampField = \"\"\r\n\r\n#Create Windows Update Settings Array\r\n#Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\r\n$WUSettingsArray = @()\r\n$WUSettingsArray += \"AutoRestartDeadlinePeriodInDays\"\r\n$WUSettingsArray += \"AutoRestartNotificationSchedule\"\r\n$WUSettingsArray += \"AutoRestartRequiredNotificationDismissal\"\r\n$WUSettingsArray += \"BranchReadinessLevel\"\r\n$WUSettingsArray += \"DeferFeatureUpdates\"\r\n$WUSettingsArray += \"DeferFeatureUpdatesPeriodInDays\"\r\n$WUSettingsArray += \"DeferQualityUpdates\"\r\n$WUSettingsArray += \"DeferQualityUpdatesPeriodInDays\"\r\n$WUSettingsArray += \"DisableDualScan\"\r\n$WUSettingsArray += \"DoNotConnectToWindowsUpdateInternetLocations\"\r\n$WUSettingsArray += \"ElevateNonAdmins\"\r\n$WUSettingsArray += \"EngagedRestartDeadline\"\r\n$WUSettingsArray += \"EngagedRestartSnoozeSchedule\"\r\n$WUSettingsArray += \"EngagedRestartTransitionSchedule\"\r\n$WUSettingsArray += \"PauseFeatureUpdatesStartTime\"\r\n$WUSettingsArray += \"PauseQualityUpdatesStartTime\"\r\n$WUSettingsArray += \"ScheduleImminentRestartWarning\"\r\n$WUSettingsArray += \"ScheduleRestartWarning\"\r\n$WUSettingsArray += \"SetAutoRestartDeadline\"\r\n$WUSettingsArray += \"SetAutoRestartNotificationConfig\"\r\n$WUSettingsArray += \"SetAutoRestartNotificationDisable\"\r\n$WUSettingsArray += \"SetAutoRestartRequiredNotificationDismissal\"\r\n$WUSettingsArray += \"SetEDURestart\"\r\n$WUSettingsArray += \"SetEngagedRestartTransitionSchedule\"\r\n$WUSettingsArray += \"SetRestartWarningSchd\"\r\n\r\n#Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\r\n$WUAUSettingsArray = @()\r\n$WUAUSettingsArray += \"AutoInstallMinorUpdates\"\r\n$WUAUSettingsArray += \"EnableFeaturedSoftware\"\r\n$WUAUSettingsArray += \"IncludeRecommendedUpdates\"\r\n$WUAUSettingsArray += \"NoAUAsDefaultShutdownOption\"\r\n$WUAUSettingsArray += \"NoAUShutdownOption\"\r\n$WUAUSettingsArray += \"NoAutoRebootWithLoggedOnUsers\"\r\n$WUAUSettingsArray += \"NoAutoUpdate\"\r\n$WUAUSettingsArray += \"RebootRelaunchTimeout\"\r\n$WUAUSettingsArray += \"RebootRelaunchTimeoutEnabled\"\r\n$WUAUSettingsArray += \"RebootWarningTimeout\"\r\n$WUAUSettingsArray += \"RebootWarningTimeoutEnabled\"\r\n$WUAUSettingsArray += \"RescheduleWaitTime\"\r\n$WUAUSettingsArray += \"RescheduleWaitTimeEnabled\"\r\n$WUAUSettingsArray += \"WUServer\"\r\n$WUAUSettingsArray += \"WUStatusServer\"\r\n\r\n#CoManagement Capabilities for WIndows Update Workload\r\n$CoMgmtArray = @(17, 19, 21, 23, 25, 27, 29, 31, 49, 51, 53, 55, 57, 59, 61, 63, 81, 83, 85, 87, 89, 91, 93, 95, 113, 115, 117, 119, 121, 123, 125, 127, 145, 147, 149, 151, 153, 155, 157, 159, 177, 179, 181, 183, 185, 187, 189, 191, 209, 211, 213, 215, 217, 219, 221, 223, 241, 243, 245, 247, 249, 251, 253, 255)\r\n\r\n#endregion\r\n\r\n#region Initialize\r\n\r\n# Enable TLS 1.2 support \r\n[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\r\n\r\n#Get Intune DeviceID and ManagedDeviceName\r\nif (@(Get-ChildItem HKLM:SOFTWARE\\Microsoft\\Enrollments\\ -Recurse | Where-Object { $_.PSChildName -eq 'MS DM Server' })) {\r\n    $MSDMServerInfo = Get-ChildItem HKLM:SOFTWARE\\Microsoft\\Enrollments\\ -Recurse | Where-Object { $_.PSChildName -eq 'MS DM Server' }\r\n    $ManagedDeviceInfo = Get-ItemProperty -LiteralPath \"Registry::$($MSDMServerInfo)\"\r\n}\r\n$ManagedDeviceID = $ManagedDeviceInfo.EntDMID\r\n\r\n#Get AAD DeviceID\r\n# Define Cloud Domain Join information registry path\r\n$AzureADJoinInfoRegistryKeyPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\"\r\n\t\t\r\n# Retrieve the child key name that is the thumbprint of the machine certificate containing the device identifier guid\r\n$AzureADJoinInfoThumbprint = Get-ChildItem -Path $AzureADJoinInfoRegistryKeyPath | Select-Object -ExpandProperty \"PSChildName\"\r\nif (-not ($AzureADJoinInfoThumbprint -eq $null)) {\r\n    # Retrieve the machine certificate based on thumbprint from registry key\r\n    $AzureADJoinCertificate = Get-ChildItem -Path \"Cert:\\LocalMachine\\My\" -Recurse | Where-Object { $PSItem.Thumbprint -eq $AzureADJoinInfoThumbprint }\r\n    if (-not ($AzureADJoinCertificate -eq $null)) {\r\n        # Determine the device identifier from the subject name\r\n        $AzureADDeviceID = ($AzureADJoinCertificate | Select-Object -ExpandProperty \"Subject\") -replace \"CN=\", \"\"\r\n    }\r\n}\r\n\r\n#Get Computer Name\r\n$DeviceName = (Get-ComputerInfo).CsName\r\n\r\n#Get OS Information\r\n$ComputerOSVersion = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\\cimv2).Version\r\n$ComputerOSBuild = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\\cimv2).BuildNumber\r\n\r\n#Get Default AU Service\r\n$DefaultAUService = (New-Object -ComObject \"Microsoft.Update.ServiceManager\").services | Where-Object { $_.IsDefaultAUService -eq 'True' } | Select-Object -ExpandProperty Name\r\n\r\n#endregion\r\n\r\n#region Functions\r\n\r\n# Function to create the authorization signature\r\nFunction New-Signature ($customerID, $SharedKey, $Date, $ContentLength, $Method, $ContentType, $Resource) {\r\n    $xHeaders = \"x-ms-date:\" + $Date\r\n    $stringToHash = $Method + \"`n\" + $ContentLength + \"`n\" + $ContentType + \"`n\" + $xHeaders + \"`n\" + $Resource\r\n\t\r\n    $bytesToHash = [Text.Encoding]::UTF8.GetBytes($stringToHash)\r\n    $keyBytes = [Convert]::FromBase64String($sharedKey)\r\n\t\r\n    $sha256 = New-Object System.Security.Cryptography.HMACSHA256\r\n    $sha256.Key = $keyBytes\r\n    $calculatedHash = $sha256.ComputeHash($bytesToHash)\r\n    $encodedHash = [Convert]::ToBase64String($calculatedHash)\r\n    $authorization = 'SharedKey {0}:{1}' -f $customerId, $encodedHash\r\n    return $authorization\r\n}\r\n\r\n# Function to create and post the request\r\nFunction Send-LogAnalyticsData($CustomerID, $SharedKey, $Body, $LogType) {\r\n    $Method = \"POST\"\r\n    $ContentType = \"application/json\"\r\n    $Resource = \"/api/logs\"\r\n    $rfc1123date = [DateTime]::UtcNow.ToString(\"r\")\r\n    $ContentLength = $Body.Length\r\n    $signature = New-Signature `\r\n        -customerId $customerId `\r\n        -sharedKey $sharedKey `\r\n        -date $rfc1123date `\r\n        -ContentLength $ContentLength `\r\n        -Method $Method `\r\n        -ContentType $ContentType `\r\n        -Resource $Resource\r\n    $uri = \"https://\" + $CustomerID + \".ods.opinsights.azure.com\" + $Resource + \"?api-version=2016-04-01\"\r\n\t\r\n    #validate that payload data does not exceed limits\r\n    if ($Body.Length -gt (31.9 * 1024 * 1024)) {\r\n        throw (\"Upload payload is too big and exceed the 32Mb limit for a single upload. Please reduce the payload size. Current payload size is: \" + ($Body.Length / 1024 / 1024).ToString(\"#.#\") + \"Mb\")\r\n    }\r\n\t\r\n    $PayLoadSize = (\"Upload payload size is \" + ($Body.Length / 1024).ToString(\"#.#\") + \"Kb \")\r\n\t\r\n    $Headers = @{\r\n        \"Authorization\"        = $signature;\r\n        \"Log-Type\"             = $logType;\r\n        \"x-ms-date\"            = $rfc1123date;\r\n        \"time-generated-field\" = $TimeStampField;\r\n    }\r\n\t\r\n    $Response = Invoke-WebRequest -Uri $uri -Method $Method -ContentType $ContentType -Headers $Headers -Body $Body -UseBasicParsing\r\n    $StatusMessage = \"$($Response.StatusCode) : $($PayLoadSize)\"\r\n    return \"$StatusMessage\"\r\n}\r\n\r\nFunction Get-RegSetting {\r\n    param (\r\n        [parameter(Mandatory = $True)]\r\n        [ValidateNotNullOrEmpty()]\r\n        [string]$RegKey,\r\n        [string]$RegSetting\r\n    )\r\n    Try {\r\n        $RegSettingValue = Get-ItemPropertyValue -Path $RegKey -Name $RegSetting -ErrorAction Stop\r\n        If (-not ($RegSettingValue -eq $Null)) {\r\n            Return $RegSettingValue\r\n        }\r\n        else {\r\n            If ($RegSetting -in (\"WUServer\", \"WUStatusServer\")) {\r\n                Return \"\"\r\n            }\r\n            else {\r\n                Return 0\r\n            }\r\n        }\r\n    }\r\n    Catch {\r\n        #Not returning caught errors\r\n        If ($RegSetting -in (\"WUServer\", \"WUStatusServer\")) {\r\n            Return \"\"\r\n        }\r\n        else {\r\n            Return 0\r\n        }\r\n    }\r\n}\r\n\r\n#endregion\r\n\r\n#region Workspace\r\n\r\n#Build WindowsUpdate Regsitry Key Inventory\r\n$WUSettingPayloadInventory = $Null\r\n$WUSettingPayloadInventory = New-Object -TypeName PSObject\r\n\r\n#Build Device Inventory\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ScriptVersion -Value $ScriptVersion -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name DeviceName -Value $DeviceName -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ManagedDeviceID -Value $ManagedDeviceID -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name AzureADDeviceID -Value $AzureADDeviceID -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ComputerOSVersion -Value $ComputerOSVersion -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name ComputerOSBuild -Value $ComputerOSBuild -Force\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name DefaultAUService -Value $DefaultAUService -Force\r\n\r\n#Get CoManagement State and Workload\r\n$CoMgmtRegKey = \"HKLM:\\Software\\Microsoft\\CCM\"\r\n$CoMgmtSetting = \"CoManagementFlags\"\r\n$CoMgmtValue = Get-RegSetting -RegKey $CoMgmtRegKey -RegSetting $CoMgmtSetting\r\nIf ($CoMgmtValue -in $CoMgmtArray) {\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $True -Force\r\n}\r\nelse {\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $False -Force\r\n}\r\n$WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtValue -Value $CoMgmtValue -Force\r\n\r\n#Get Registry Values for Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\r\n$WURegKey = \"HKLM:Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\"\r\nForEach ($WUSetting in $WUSettingsArray) {\r\n    $RegValue = Get-RegSetting -RegKey $WURegKey -RegSetting $WUSetting\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name $WUSetting -Value $RegValue -Force\r\n}\r\n\r\n#Get Registry Values for Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\r\n$WUAURegKey = \"HKLM:Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\"\r\nForEach ($WUAUSetting in $WUAUSettingsArray) {\r\n    $RegValue = Get-RegSetting -RegKey $WUAURegKey -RegSetting $WUAUSetting\r\n    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name $WUAUSetting -Value $RegValue -Force\r\n}\r\n\r\n#Build Payload Array\r\n$WUSettingPayload = $Null\r\n$WUSettingPayload = @()\r\n$WUSettingPayload += $WUSettingPayloadInventory\r\n\r\n#Prepare Array for Upload\r\n$PayloadJson = $WUSettingPayload | ConvertTo-Json\r\n\r\n#Write upload intent to console\r\nWrite-Output \"Sending Payload:\"\r\nWrite-Output $PayloadJson\r\n\r\n#Upload Data\r\n$ResponseWUInventory = Send-LogAnalyticsData -CustomerID $CustomerID -SharedKey $SharedKey -Body ([System.Text.Encoding]::UTF8.GetBytes($PayloadJson)) -LogType $LogType\r\n$ResponseWUInventory\r\n\r\n#Status Report\r\n$Date = Get-Date -Format \"dd-MM HH:mm\"\r\n$OutputMessage = \"InventoryDate: $Date \"\r\n\r\nif ($ResponseWUInventory) {\r\n    if ($ResponseWUInventory -like \"200*\") {\r\n        $OutputMessage = $OutputMessage + \" WUInventory:OK\"\r\n    }\r\n    else {\r\n        $OutputMessage = $OutputMessage + \" WUInventory:Fail\"\r\n    }\r\n}\r\nWrite-Output $OutputMessage\r\n\r\n#endregion\r\n#>\r\n```"
             },
             "name": "text - 7"
           }

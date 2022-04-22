@@ -21,20 +21,16 @@
 #region SCRIPTVARIABLES
 
 #Track Script Version in Log Analytics Table
-$ScriptVersion = "PR003"
+$ScriptVersion = "PR004"
 
-#Log Analytics Workspace ID
-$CustomerID = "3c547246-0c3b-4493-89bc-7eb5b53129b4"
-
-#Log Analytics Workspace Primary Key
-$SharedKey = "TzBPHmaxzxApj+HZbHH+hjwt2/Dx1bwJBkCbMvKFLeLzXNCHG2quBhPA+sRhJ9CQ5/RD6FlxYNiK+i5VxjpvTQ=="
+#FunctionAppURI for Log Upload
+$AzureFunctionURL = "https://fn-enhancedinventory.azurewebsites.net/api/LogCollectorAPI"
 
 #Custom Log Name
-$LogType = "WUDevice_Settings"
+$CustomLogName = "WUDevice_Settings"
 
-# You can use an optional field to specify the timestamp from the data. If the time field is not specified, Azure Monitor assumes the time is the message ingestion time
-# DO NOT DELETE THIS VARIABLE. Recommened keep this blank. 
-$TimeStampField = ""
+#Date
+$Date = (Get-Date)
 
 #Create Windows Update Settings Array
 #Software\Policies\Microsoft\Windows\WindowsUpdate
@@ -129,57 +125,6 @@ $DefaultAUService = (New-Object -ComObject "Microsoft.Update.ServiceManager").se
 
 #region Functions
 
-# Function to create the authorization signature
-Function New-Signature ($customerID, $SharedKey, $Date, $ContentLength, $Method, $ContentType, $Resource) {
-    $xHeaders = "x-ms-date:" + $Date
-    $stringToHash = $Method + "`n" + $ContentLength + "`n" + $ContentType + "`n" + $xHeaders + "`n" + $Resource
-	
-    $bytesToHash = [Text.Encoding]::UTF8.GetBytes($stringToHash)
-    $keyBytes = [Convert]::FromBase64String($sharedKey)
-	
-    $sha256 = New-Object System.Security.Cryptography.HMACSHA256
-    $sha256.Key = $keyBytes
-    $calculatedHash = $sha256.ComputeHash($bytesToHash)
-    $encodedHash = [Convert]::ToBase64String($calculatedHash)
-    $authorization = 'SharedKey {0}:{1}' -f $customerId, $encodedHash
-    return $authorization
-}
-
-# Function to create and post the request
-Function Send-LogAnalyticsData($CustomerID, $SharedKey, $Body, $LogType) {
-    $Method = "POST"
-    $ContentType = "application/json"
-    $Resource = "/api/logs"
-    $rfc1123date = [DateTime]::UtcNow.ToString("r")
-    $ContentLength = $Body.Length
-    $signature = New-Signature `
-        -customerId $customerId `
-        -sharedKey $sharedKey `
-        -date $rfc1123date `
-        -ContentLength $ContentLength `
-        -Method $Method `
-        -ContentType $ContentType `
-        -Resource $Resource
-    $uri = "https://" + $CustomerID + ".ods.opinsights.azure.com" + $Resource + "?api-version=2016-04-01"
-	
-    #validate that payload data does not exceed limits
-    if ($Body.Length -gt (31.9 * 1024 * 1024)) {
-        throw ("Upload payload is too big and exceed the 32Mb limit for a single upload. Please reduce the payload size. Current payload size is: " + ($Body.Length / 1024 / 1024).ToString("#.#") + "Mb")
-    }
-	
-    $PayLoadSize = ("Upload payload size is " + ($Body.Length / 1024).ToString("#.#") + "Kb ")
-	
-    $Headers = @{
-        "Authorization"        = $signature;
-        "Log-Type"             = $logType;
-        "x-ms-date"            = $rfc1123date;
-        "time-generated-field" = $TimeStampField;
-    }
-	
-    $Response = Invoke-WebRequest -Uri $uri -Method $Method -ContentType $ContentType -Headers $Headers -Body $Body -UseBasicParsing
-    $StatusMessage = "$($Response.StatusCode) : $($PayLoadSize)"
-    return "$StatusMessage"
-}
 
 Function Get-RegSetting {
     param (
@@ -212,10 +157,91 @@ Function Get-RegSetting {
         }
     }
 }
+function Get-AzureADDeviceID {
+    <#
+    .SYNOPSIS
+        Get the Azure AD device ID from the local device.
+    
+    .DESCRIPTION
+        Get the Azure AD device ID from the local device.
+    
+    .NOTES
+        Author:      Nickolaj Andersen
+        Contact:     @NickolajA
+        Created:     2021-05-26
+        Updated:     2021-05-26
+    
+        Version history:
+        1.0.0 - (2021-05-26) Function created
+    #>
+    Process {
+        # Define Cloud Domain Join information registry path
+        $AzureADJoinInfoRegistryKeyPath = "HKLM:\SYSTEM\CurrentControlSet\Control\CloudDomainJoin\JoinInfo"
+		
+        # Retrieve the child key name that is the thumbprint of the machine certificate containing the device identifier guid
+        $AzureADJoinInfoThumbprint = Get-ChildItem -Path $AzureADJoinInfoRegistryKeyPath | Select-Object -ExpandProperty "PSChildName"
+        if ($AzureADJoinInfoThumbprint -ne $null) {
+            # Retrieve the machine certificate based on thumbprint from registry key
+            $AzureADJoinCertificate = Get-ChildItem -Path "Cert:\LocalMachine\My" -Recurse | Where-Object { $PSItem.Thumbprint -eq $AzureADJoinInfoThumbprint }
+            if ($AzureADJoinCertificate -ne $null) {
+                # Determine the device identifier from the subject name
+                $AzureADDeviceID = ($AzureADJoinCertificate | Select-Object -ExpandProperty "Subject") -replace "CN=", ""
+                # Handle return value
+                return $AzureADDeviceID
+            }
+        }
+    }
+} #endfunction 
+function Get-AzureADJoinDate {
+    <#
+    .SYNOPSIS
+        Get the Azure AD device ID from the local device.
+    
+    .DESCRIPTION
+        Get the Azure AD device ID from the local device.
+    
+    .NOTES
+        Author:      Nickolaj Andersen
+        Contact:     @NickolajA
+        Created:     2021-05-26
+        Updated:     2021-05-26
+    
+        Version history:
+        1.0.0 - (2021-05-26) Function created
+    #>
+    Process {
+        # Define Cloud Domain Join information registry path
+        $AzureADJoinInfoRegistryKeyPath = "HKLM:\SYSTEM\CurrentControlSet\Control\CloudDomainJoin\JoinInfo"
+		
+        # Retrieve the child key name that is the thumbprint of the machine certificate containing the device identifier guid
+        $AzureADJoinInfoThumbprint = Get-ChildItem -Path $AzureADJoinInfoRegistryKeyPath | Select-Object -ExpandProperty "PSChildName"
+        if ($AzureADJoinInfoThumbprint -ne $null) {
+            # Retrieve the machine certificate based on thumbprint from registry key
+            $AzureADJoinCertificate = Get-ChildItem -Path "Cert:\LocalMachine\My" -Recurse | Where-Object { $PSItem.Thumbprint -eq $AzureADJoinInfoThumbprint }
+            if ($AzureADJoinCertificate -ne $null) {
+                # Determine the device identifier from the subject name
+                $AzureADJoinDate = ($AzureADJoinCertificate | Select-Object -ExpandProperty "NotBefore") 
+                # Handle return value
+                return $AzureADJoinDate
+            }
+        }
+    }
+} #endfunction 
+#Function to get AzureAD TenantID
+function Get-AzureADTenantID {
+    # Cloud Join information registry path
+    $AzureADTenantInfoRegistryKeyPath = "HKLM:\SYSTEM\CurrentControlSet\Control\CloudDomainJoin\TenantInfo"
+    # Retrieve the child key name that is the tenant id for AzureAD
+    $AzureADTenantID = Get-ChildItem -Path $AzureADTenantInfoRegistryKeyPath | Select-Object -ExpandProperty "PSChildName"
+    return $AzureADTenantID
+}                          
+#endregion functions
 
-#endregion
 
 #region Workspace
+#Get Common data for validation in Azure Function: 
+$AzureADDeviceID = Get-AzureADDeviceID
+$AzureADTenantID = Get-AzureADTenantID
 
 #Build WindowsUpdate Regsitry Key Inventory
 $WUSettingPayloadInventory = $Null
@@ -258,16 +284,44 @@ $WUSettingPayload = $Null
 $WUSettingPayload = @()
 $WUSettingPayload += $WUSettingPayloadInventory
 
-#Prepare Array for Upload
-$PayloadJson = $WUSettingPayload | ConvertTo-Json
+#Randomize over 50 minutes to spread load on Azure Function - disabled on date of enrollment (Disabled in sample - Enable only in larger environments)
+$JoinDate = Get-AzureADJoinDate
+$DelayDate = $JoinDate.AddDays(1)
+$CompareDate = ($DelayDate - $JoinDate)
+if ($CompareDate.Days -ge 1) {
+    Write-Output "Randomzing execution time"
+    #$ExecuteInSeconds = (Get-Random -Maximum 3000 -Minimum 1)
+    #Start-Sleep -Seconds $ExecuteInSeconds
+}
+#Start sending logs
+$date = Get-Date -Format "dd-MM HH:mm"
+$OutputMessage = "InventoryDate:$date "
 
-#Write upload intent to console
-Write-Output "Sending Payload:"
-Write-Output $PayloadJson
+$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+$headers.Add("Content-Type", "application/json")
 
-#Upload Data
-$ResponseWUInventory = Send-LogAnalyticsData -CustomerID $CustomerID -SharedKey $SharedKey -Body ([System.Text.Encoding]::UTF8.GetBytes($PayloadJson)) -LogType $LogType
-$ResponseWUInventory
+# Add arrays of logs into payload array 
+$LogPayLoad = New-Object -TypeName PSObject 
+$LogPayLoad | Add-Member -NotePropertyMembers @{$CustomLogName = $WUSettingPayload }
+
+# Construct main payload to send to LogCollectorAPI // IMPORTANT // KEEP AND DO NOT CHANGE THIS
+$MainPayLoad = [PSCustomObject]@{
+    AzureADTenantID = $AzureADTenantID
+    AzureADDeviceID = $AzureADDeviceID
+    LogPayloads     = $LogPayLoad
+}
+$MainPayLoadJson = $MainPayLoad | ConvertTo-Json -Depth 9	
+
+# Sending data to API
+try {
+    $ResponseInventory = Invoke-RestMethod $AzureFunctionURL -Method 'POST' -Headers $headers -Body $MainPayLoadJson
+    $OutputMessage = $OutPutMessage + "Inventory:OK " + $ResponseInventory
+} 
+catch {
+    $ResponseInventory = "Error Code: $($_.Exception.Response.StatusCode.value__)"
+    $ResponseMessage = $_.Exception.Message
+    $OutputMessage = $OutPutMessage + "Inventory:Fail " + $ResponseInventory + $ResponseMessage
+}
 
 #Status Report
 $Date = Get-Date -Format "dd-MM HH:mm"

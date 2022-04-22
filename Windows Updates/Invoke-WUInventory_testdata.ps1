@@ -31,7 +31,7 @@ $CustomerID = "3c547246-0c3b-4493-89bc-7eb5b53129b4"
 $SharedKey = "TzBPHmaxzxApj+HZbHH+hjwt2/Dx1bwJBkCbMvKFLeLzXNCHG2quBhPA+sRhJ9CQ5/RD6FlxYNiK+i5VxjpvTQ=="
 
 #Custom Log Name
-$LogType = "WU_Settings"
+$LogType = "WUDevice_Settings"
 
 # You can use an optional field to specify the timestamp from the data. If the time field is not specified, Azure Monitor assumes the time is the message ingestion time
 # DO NOT DELETE THIS VARIABLE. Recommened keep this blank. 
