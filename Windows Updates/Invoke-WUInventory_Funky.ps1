@@ -315,6 +315,10 @@ $MainPayLoad = [PSCustomObject]@{
 }
 $MainPayLoadJson = $MainPayLoad | ConvertTo-Json -Depth 9	
 
+#Write upload intent to console
+Write-Output "Sending Payload:"
+Write-Output $MainPayLoadJson
+
 # Sending data to API
 try {
     $ResponseInventory = Invoke-RestMethod $AzureFunctionURL -Method 'POST' -Headers $headers -Body $MainPayLoadJson
