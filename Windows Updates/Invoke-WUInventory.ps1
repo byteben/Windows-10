@@ -238,7 +238,7 @@ If ($CoMgmtValue -in $CoMgmtArray) {
     $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $true -Force
 }
 else {
-    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $Null -Force
+    $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtWorkload -Value $false -Force
 }
 $WUSettingPayloadInventory | Add-Member -MemberType NoteProperty -Name CoMgmtValue -Value $CoMgmtValue -Force
 
