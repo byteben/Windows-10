@@ -327,7 +327,7 @@ catch {
 $Date = Get-Date -Format "dd-MM HH:mm"
 $OutputMessage = "InventoryDate: $Date "
 
-if ($ResponseWUInventory) {
+if ($ResponseInventory) {
     if ($ResponseWUInventory -like "200*") {
         $OutputMessage = $OutputMessage + " WUInventory:OK"
     }
