@@ -112,7 +112,7 @@ if (-not ($AzureADJoinInfoThumbprint -eq $null)) {
 }
 
 #Get Computer Name
-$DeviceName = (Get-ComputerInfo).CsName
+$DeviceName = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\cimv2).CSName
 
 #Get OS Information
 $ComputerOSVersion = (Get-CIMInstance -ClassName Win32_OperatingSystem -NameSpace root\cimv2).Version
