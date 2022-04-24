@@ -78,28 +78,6 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\n| where \nisnotempty( DeviceName_s )\n| summarize arg_max(TimeGenerated,*) by DeviceName_s\n| count",
-              "size": 3,
-              "title": "Devices Reporting In",
-              "noDataMessage": "No devices reporting in",
-              "showRefreshButton": true,
-              "queryType": 0,
-              "resourceType": "microsoft.operationalinsights/workspaces",
-              "visualization": "card",
-              "textSettings": {
-                "style": "bignumber"
-              }
-            },
-            "customWidth": "20",
-            "name": "Devices Reporting In",
-            "styleSettings": {
-              "maxWidth": "20"
-            }
-          },
-          {
-            "type": 3,
-            "content": {
-              "version": "KqlItem/1.0",
               "query": "WUDevice_Settings_CL\r\n| where \r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| summarize Windows10 = countif(ComputerOSVersion_s startswith \"10.0.1\"), Windows11 = countif(ComputerOSVersion_s startswith \"10.0.2\")\r\n| extend OSEC = pack(\"Windows10\", Windows10, \"Windows11\", Windows11)\r\n| mvexpand kind = array OSEC\r\n| project OS = tostring(OSEC[0]), Value = toint(OSEC[1])\r\n\r\n",
               "size": 3,
               "title": "Windows OS Distribution",
@@ -128,10 +106,10 @@
                 }
               }
             },
-            "customWidth": "40",
+            "customWidth": "33",
             "name": "query - 7",
             "styleSettings": {
-              "maxWidth": "40"
+              "maxWidth": "33"
             }
           },
           {
@@ -145,17 +123,34 @@
               "resourceType": "microsoft.operationalinsights/workspaces",
               "visualization": "piechart"
             },
-            "customWidth": "40",
+            "customWidth": "33",
             "name": "query - 8",
             "styleSettings": {
-              "maxWidth": "40"
+              "maxWidth": "33"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "WUDevice_Settings_CL\r\n| where \r\nisnotempty( DeviceName_s ) and\r\nBranchReadinessLevel_d in (2, 4, 6, 32)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 2, \"Fast\",\"Other\")\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 4, \"Slow\",BranchCacheLevel)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 6, \"Insider\",BranchCacheLevel)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 32, \"FU from GA Channel\",BranchCacheLevel)\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| summarize dcount(DeviceName_s) by BranchCacheLevel",
+              "size": 3,
+              "title": "Devices targeted for Preview Builds",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "piechart"
+            },
+            "customWidth": "33",
+            "name": "query - 8 - Copy",
+            "styleSettings": {
+              "maxWidth": "33"
             }
           },
           {
             "type": 1,
             "content": {
               "json": "**Service Breaking Settings**",
-              "style": "warning"
+              "style": "error"
             },
             "name": "text - 12"
           },
@@ -841,10 +836,18 @@
             }
           },
           {
+            "type": 1,
+            "content": {
+              "json": "**Service Affecting Settings**",
+              "style": "warning"
+            },
+            "name": "text - 12 - Copy"
+          },
+          {
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s ) and\r\n(AutoRestartDeadlinePeriodInDays_d != 0 or\r\nAutoRestartNotificationSchedule_d != 0 or\r\nAutoInstallMinorUpdates_d != 0 or\r\nAutoRestartDeadlinePeriodInDays_d != 0 or\r\nAutoRestartNotificationSchedule_d != 0 or\r\nAutoRestartRequiredNotificationDismissal_d != 0 or\r\nBranchReadinessLevel_d != 0 or\r\nDeferFeatureUpdates_d != 0 or\r\nDeferFeatureUpdatesPeriodInDays_d != 0 or\r\nDeferQualityUpdates_d != 0 or\r\nDeferQualityUpdatesPeriodInDays_d != 0 or\r\nDisableDualScan_d != 0 or\r\nDoNotConnectToWindowsUpdateInternetLocations_d != 0 or\r\nElevateNonAdmins_d != 0 or\r\nEnableFeaturedSoftware_d != 0 or\r\nEngagedRestartDeadline_d != 0 or\r\nEngagedRestartSnoozeSchedule_d != 0 or\r\nEngagedRestartTransitionSchedule_d != 0 or\r\nIncludeRecommendedUpdates_d != 0 or\r\nNoAUAsDefaultShutdownOption_d != 0 or\r\nNoAUShutdownOption_d != 0 or\r\nNoAutoRebootWithLoggedOnUsers_d != 0 or\r\nNoAutoUpdate_d != 0 or\r\nPauseFeatureUpdatesStartTime_d != 0 or\r\nPauseQualityUpdatesStartTime_d != 0 or\r\nRebootRelaunchTimeout_d != 0 or\r\nRebootRelaunchTimeoutEnabled_d != 0 or\r\nRebootWarningTimeout_d != 0 or\r\nRebootWarningTimeoutEnabled_d != 0 or\r\nRescheduleWaitTime_d != 0 or\r\nRescheduleWaitTimeEnabled_d != 0 or\r\nScheduleImminentRestartWarning_d != 0 or\r\nScheduleRestartWarning_d != 0 or\r\nSetAutoRestartDeadline_d != 0 or\r\nSetAutoRestartNotificationConfig_d != 0 or\r\nSetAutoRestartNotificationDisable_d != 0 or\r\nSetAutoRestartRequiredNotificationDismissal_d != 0 or\r\nSetEDURestart_d != 0 or\r\nSetEngagedRestartTransitionSchedule_d != 0 or\r\nSetRestartWarningSchd_d != 0)\r\n| summarize arg_max(TimeGenerated,*) by DeviceName_s\r\n| project\r\nDeviceName_s,\r\nTimeGenerated,\r\nComputerOSVersion_s,\r\nDefaultAUService_s,\r\nCoMgmtWorkload_b,\r\nCoMgmtValue_d,\r\nAutoInstallMinorUpdates_d,\r\nAutoRestartDeadlinePeriodInDays_d,\r\nAutoRestartNotificationSchedule_d,\r\nAutoRestartRequiredNotificationDismissal_d,\r\nBranchReadinessLevel_d,\r\nDeferFeatureUpdates_d,\r\nDeferFeatureUpdatesPeriodInDays_d,\r\nDeferQualityUpdates_d,\r\nDeferQualityUpdatesPeriodInDays_d,\r\nDisableDualScan_d,\r\nDoNotConnectToWindowsUpdateInternetLocations_d,\r\nElevateNonAdmins_d,\r\nEnableFeaturedSoftware_d,\r\nEngagedRestartDeadline_d,\r\nEngagedRestartSnoozeSchedule_d,\r\nEngagedRestartTransitionSchedule_d,\r\nIncludeRecommendedUpdates_d,\r\nNoAUAsDefaultShutdownOption_d,\r\nNoAUShutdownOption_d,\r\nNoAutoRebootWithLoggedOnUsers_d,\r\nNoAutoUpdate_d,\r\nPauseFeatureUpdatesStartTime_d,\r\nPauseQualityUpdatesStartTime_d,\r\nRebootRelaunchTimeout_d,\r\nRebootRelaunchTimeoutEnabled_d,\r\nRebootWarningTimeout_d,\r\nRebootWarningTimeoutEnabled_d,\r\nRescheduleWaitTime_d,\r\nRescheduleWaitTimeEnabled_d,\r\nScheduleImminentRestartWarning_d,\r\nScheduleRestartWarning_d,\r\nSetAutoRestartDeadline_d,\r\nSetAutoRestartNotificationConfig_d,\r\nSetAutoRestartNotificationDisable_d,\r\nSetAutoRestartRequiredNotificationDismissal_d,\r\nSetEDURestart_d,\r\nSetEngagedRestartTransitionSchedule_d,\r\nSetRestartWarningSchd_d,\r\nWUServer_s,\r\nWUStatusServer_s",
+              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s ) and\r\n(AutoRestartDeadlinePeriodInDays_d != 0 or\r\nAutoRestartNotificationSchedule_d != 0 or\r\nAutoInstallMinorUpdates_d != 0 or\r\nAutoRestartDeadlinePeriodInDays_d != 0 or\r\nAutoRestartNotificationSchedule_d != 0 or\r\nAutoRestartRequiredNotificationDismissal_d != 0 or\r\nBranchReadinessLevel_d != 0 or\r\nDisableDualScan_d != 0 or\r\nDoNotConnectToWindowsUpdateInternetLocations_d != 0 or\r\nEnableFeaturedSoftware_d != 0 or\r\nEngagedRestartDeadline_d != 0 or\r\nEngagedRestartSnoozeSchedule_d != 0 or\r\nEngagedRestartTransitionSchedule_d != 0 or\r\nIncludeRecommendedUpdates_d != 0 or\r\nNoAUAsDefaultShutdownOption_d != 0 or\r\nNoAUShutdownOption_d != 0 or\r\nNoAutoRebootWithLoggedOnUsers_d != 0 or\r\nNoAutoUpdate_d != 0 or\r\nPauseFeatureUpdatesStartTime_d != 0 or\r\nPauseQualityUpdatesStartTime_d != 0 or\r\nRebootRelaunchTimeout_d != 0 or\r\nRebootRelaunchTimeoutEnabled_d != 0 or\r\nRebootWarningTimeout_d != 0 or\r\nRebootWarningTimeoutEnabled_d != 0 or\r\nRescheduleWaitTime_d != 0 or\r\nRescheduleWaitTimeEnabled_d != 0 or\r\nScheduleImminentRestartWarning_d != 0 or\r\nScheduleRestartWarning_d != 0 or\r\nSetAutoRestartDeadline_d != 0 or\r\nSetAutoRestartNotificationConfig_d != 0 or\r\nSetAutoRestartNotificationDisable_d != 0 or\r\nSetAutoRestartRequiredNotificationDismissal_d != 0 or\r\nSetEDURestart_d != 0 or\r\nSetEngagedRestartTransitionSchedule_d != 0 or\r\nSetRestartWarningSchd_d != 0)\r\n| summarize arg_max(TimeGenerated,*) by DeviceName_s\r\n| project\r\nDeviceName_s,\r\nTimeGenerated,\r\nComputerOSVersion_s,\r\nDefaultAUService_s,\r\nAutoInstallMinorUpdates_d,\r\nAutoRestartDeadlinePeriodInDays_d,\r\nAutoRestartNotificationSchedule_d,\r\nAutoRestartRequiredNotificationDismissal_d,\r\nBranchReadinessLevel_d,\r\nEnableFeaturedSoftware_d,\r\nEngagedRestartDeadline_d,\r\nEngagedRestartSnoozeSchedule_d,\r\nEngagedRestartTransitionSchedule_d,\r\nIncludeRecommendedUpdates_d,\r\nNoAUAsDefaultShutdownOption_d,\r\nNoAUShutdownOption_d,\r\nNoAutoRebootWithLoggedOnUsers_d,\r\nPauseFeatureUpdatesStartTime_d,\r\nPauseQualityUpdatesStartTime_d,\r\nRebootRelaunchTimeout_d,\r\nRebootRelaunchTimeoutEnabled_d,\r\nRebootWarningTimeout_d,\r\nRebootWarningTimeoutEnabled_d,\r\nRescheduleWaitTime_d,\r\nRescheduleWaitTimeEnabled_d,\r\nScheduleImminentRestartWarning_d,\r\nScheduleRestartWarning_d,\r\nSetAutoRestartDeadline_d,\r\nSetAutoRestartNotificationConfig_d,\r\nSetAutoRestartNotificationDisable_d,\r\nSetAutoRestartRequiredNotificationDismissal_d,\r\nSetEDURestart_d,\r\nSetEngagedRestartTransitionSchedule_d,\r\nSetRestartWarningSchd_d,\r\nWUServer_s,\r\nWUStatusServer_s",
               "size": 0,
               "title": "Windows Update Device Settings (Devices with Issues)",
               "showRefreshButton": true,
@@ -1727,14 +1730,6 @@
                     "label": "DefaultAUService"
                   },
                   {
-                    "columnId": "CoMgmtWorkload_b",
-                    "label": "CoMgmtWUWorkload"
-                  },
-                  {
-                    "columnId": "CoMgmtValue_d",
-                    "label": "CoMgmtCapabilities"
-                  },
-                  {
                     "columnId": "AutoInstallMinorUpdates_d",
                     "label": "AutoInstallMinorUpdates"
                   },
@@ -1753,34 +1748,6 @@
                   {
                     "columnId": "BranchReadinessLevel_d",
                     "label": "BranchReadinessLevel"
-                  },
-                  {
-                    "columnId": "DeferFeatureUpdates_d",
-                    "label": "DeferFeatureUpdates"
-                  },
-                  {
-                    "columnId": "DeferFeatureUpdatesPeriodInDays_d",
-                    "label": "DeferFeatureUpdatesPeriodInDays"
-                  },
-                  {
-                    "columnId": "DeferQualityUpdates_d",
-                    "label": "DeferQualityUpdates"
-                  },
-                  {
-                    "columnId": "DeferQualityUpdatesPeriodInDays_d",
-                    "label": "DeferQualityUpdatesPeriodInDays"
-                  },
-                  {
-                    "columnId": "DisableDualScan_d",
-                    "label": "DisableDualScan"
-                  },
-                  {
-                    "columnId": "DoNotConnectToWindowsUpdateInternetLocations_d",
-                    "label": "DoNotConnectToWindowsUpdateInternetLocations"
-                  },
-                  {
-                    "columnId": "ElevateNonAdmins_d",
-                    "label": "ElevateNonAdmins"
                   },
                   {
                     "columnId": "EnableFeaturedSoftware_d",
@@ -1813,10 +1780,6 @@
                   {
                     "columnId": "NoAutoRebootWithLoggedOnUsers_d",
                     "label": "NoAutoRebootWithLoggedOnUsers"
-                  },
-                  {
-                    "columnId": "NoAutoUpdate_d",
-                    "label": "NoAutoUpdate"
                   },
                   {
                     "columnId": "PauseFeatureUpdatesStartTime_d",
@@ -1891,6 +1854,926 @@
               "sortBy": []
             },
             "name": "Windows Update Device Settings (Devices with Issues)"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "**Settings with no Impact**",
+              "style": "info"
+            },
+            "name": "text - 12 - Copy - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s ) and\r\n(DeferFeatureUpdates_d != 0 or\r\nDeferFeatureUpdatesPeriodInDays_d != 0 or\r\nDeferQualityUpdates_d != 0 or\r\nDeferQualityUpdatesPeriodInDays_d != 0 or\r\nElevateNonAdmins_d != 0)\r\n| summarize arg_max(TimeGenerated,*) by DeviceName_s\r\n| project\r\nDeviceName_s,\r\nTimeGenerated,\r\nComputerOSVersion_s,\r\nDefaultAUService_s,\r\nDeferFeatureUpdates_d,\r\nDeferFeatureUpdatesPeriodInDays_d,\r\nDeferQualityUpdates_d,\r\nDeferQualityUpdatesPeriodInDays_d,\r\nElevateNonAdmins_d,\r\nWUServer_s,\r\nWUStatusServer_s",
+              "size": 0,
+              "title": "Windows Update Device Settings (Devices with Settings that have no impact)",
+              "showRefreshButton": true,
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "CoMgmtWorkload_b",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "true",
+                          "representation": "success",
+                          "text": ""
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "false",
+                          "representation": "more",
+                          "text": ""
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "more",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "CoMgmtValue_d",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "min": 17,
+                      "max": 255,
+                      "palette": "blue"
+                    }
+                  },
+                  {
+                    "columnMatch": "AutoInstallMinorUpdates_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "AutoRestartDeadlinePeriodInDays_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "AutoRestartNotificationSchedule_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "AutoRestartRequiredNotificationDismissal_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "BranchReadinessLevel_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DeferFeatureUpdates_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DeferFeatureUpdatesPeriodInDays_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DeferQualityUpdates_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DeferQualityUpdatesPeriodInDays_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DisableDualScan_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "4",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DoNotConnectToWindowsUpdateInternetLocations_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "4",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "ElevateNonAdmins_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "EnableFeaturedSoftware_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "EngagedRestartDeadline_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "EngagedRestartSnoozeSchedule_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "EngagedRestartTransitionSchedule_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "IncludeRecommendedUpdates_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "NoAUAsDefaultShutdownOption_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "NoAUShutdownOption_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "NoAutoRebootWithLoggedOnUsers_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "NoAutoUpdate_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "4",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "PauseFeatureUpdatesStartTime_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "PauseQualityUpdatesStartTime_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "RebootRelaunchTimeout_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "RebootRelaunchTimeoutEnabled_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "RebootWarningTimeout_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "RebootWarningTimeoutEnabled_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "RescheduleWaitTime_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "RescheduleWaitTimeEnabled_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "ScheduleImminentRestartWarning_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "ScheduleRestartWarning_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetAutoRestartDeadline_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetAutoRestartNotificationConfig_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetAutoRestartNotificationDisable_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetAutoRestartRequiredNotificationDismissal_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetEDURestart_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetEngagedRestartTransitionSchedule_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "SetRestartWarningSchd_d",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "2",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "DisableDualScan_s",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "!=",
+                          "thresholdValue": "0",
+                          "representation": "4",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "rowLimit": 30,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "DeviceName_s",
+                    "label": "DeviceName"
+                  },
+                  {
+                    "columnId": "ComputerOSVersion_s",
+                    "label": "ComputerOSVersion"
+                  },
+                  {
+                    "columnId": "DefaultAUService_s",
+                    "label": "DefaultAUService"
+                  },
+                  {
+                    "columnId": "DeferFeatureUpdates_d",
+                    "label": "DeferFeatureUpdates"
+                  },
+                  {
+                    "columnId": "DeferFeatureUpdatesPeriodInDays_d",
+                    "label": "DeferFeatureUpdatesPeriodInDays"
+                  },
+                  {
+                    "columnId": "DeferQualityUpdates_d",
+                    "label": "DeferQualityUpdates"
+                  },
+                  {
+                    "columnId": "DeferQualityUpdatesPeriodInDays_d",
+                    "label": "DeferQualityUpdatesPeriodInDays"
+                  },
+                  {
+                    "columnId": "ElevateNonAdmins_d",
+                    "label": "ElevateNonAdmins"
+                  }
+                ]
+              },
+              "sortBy": []
+            },
+            "name": "Windows Update Device Settings (Devices with Settings that have no impact)"
           },
           {
             "type": 12,
@@ -2005,7 +2888,7 @@
             "content": {
               "version": "KqlItem/1.0",
               "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty (DeviceName_s) and\r\nCoMgmtWorkload_b == true and\r\nCoMgmtValue_d > 0\r\n| summarize arg_max(TimeGenerated,*) by DeviceName_s\r\n| summarize DeviceCount = count(DeviceName_s) by CoMgmtValue_d\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 17, \"[Windows Update]\", \"Other\")\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 19, \"[Windows Update, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 21, \"[Windows Update, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 23, \"[Windows Update, Resource Access, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 25, \"[Windows Update, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 27, \"[Windows Update, Compliance, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 29, \"[Windows Update, Resource Access, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 31, \"[Windows Update, Compliance, Resource Access, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 49, \"[Windows Update, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 51, \"[Windows Update, Compliance, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 55, \"[Windows Update, Endpoint Protection, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 59, \"[Windows Update, Compliance, Endpoint Protection, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 61, \"[Windows Update, Resource Access, Endpoint Protection, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 63, \"[Windows Update, Compliance, Resource Access, Endpoint Protection, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 81, \"[Windows Update, Client Apps]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 83, \"[Windows Update, Compliance, Client Apps]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 85, \"[Windows Update, Client Apps, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 87, \"[Windows Update, Compliance, Client Apps, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 89, \"[Windows Update, Client Apps, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 91, \"[Windows Update, Client Apps, Compliance, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 93, \"[Windows Update, Client Apps, Resource Access, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 95, \"[Windows Update, Client Apps, Compliance, Resource Access, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 113, \"[Windows Update, Client Apps, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 115, \"[Windows Update, Client Apps, Compliance, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 117, \"[Windows Update, Client Apps, Resource Access, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 119, \"[Windows Update, Client Apps, Compliance, Resource Access, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 121, \"[Windows Update, Client Apps, Device Configuration, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 123, \"[Windows Update, Client Apps, Compliance, Device Configuration, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 125, \"[Windows Update, Client Apps, Resource Access, Device Configuration, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 127, \"[Windows Update, Client Apps, Compliance, Resource Access, Device Configuration, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 145, \"[Windows Update, OC2R]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 147, \"[Windows Update, OC2R, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 149, \"[Windows Update, OC2R, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 151, \"[Windows Update, OC2R, Resource Access, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 153, \"[Windows Update, OC2R, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 155, \"[Windows Update, OC2R, Device Configuration, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 157, \"[Windows Update, OC2R, Device Configuration, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 159, \"[Windows Update, OC2R, Device Configuration, Compliance, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 177, \"[Windows Update, OC2R, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 179, \"[Windows Update, OC2R, Endpoint Protection, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 181, \"[Windows Update, OC2R, Endpoint Protection, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 183, \"[Windows Update, OC2R, Endpoint Protection, Resource Access, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 185, \"[Windows Update, OC2R, Endpoint Protection, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 187, \"[Windows Update, OC2R, Endpoint Protection, Compliance, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 189, \"[Windows Update, OC2R, Endpoint Protection, Device Configuration, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 191, \"[Windows Update, OC2R, Endpoint Protection, Device Configuration, Compliance, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 209, \"[Windows Update, OC2R, Client Apps]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 211, \"[Windows Update, OC2R, Client Apps, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 213, \"[Windows Update, OC2R, Client Apps, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 215, \"[Windows Update, OC2R, Client Apps, Resource Access, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 217, \"[Windows Update, OC2R, Client Apps, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 219, \"[Windows Update, OC2R, Client Apps, Device Configuration, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 221, \"[Windows Update, OC2R, Client Apps, Device Configuration, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 223, \"[Windows Update, OC2R, Client Apps, Device Configuration, Resource Access, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 241, \"[Windows Update, OC2R, Client Apps, Endpoint Protection]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 243, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 245, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 247, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Resource Access, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 249, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Device Configuration]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 251, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Device Configuration, Compliance]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 253, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Device Configuration, Resource Access]\", CoMgmtValue)\r\n| extend CoMgmtValue = iff(CoMgmtValue_d == 255, \"[Windows Update, OC2R, Client Apps, Endpoint Protection, Device Configuration, Resource Access, Compliance]\", CoMgmtValue)\r\n| project DeviceCount, Capability = CoMgmtValue_d, Workload = CoMgmtValue\r\n| order by DeviceCount desc",
-              "size": 0,
+              "size": 3,
               "aggregation": 5,
               "title": "Workload Distribution",
               "queryType": 0,
@@ -2076,16 +2959,37 @@
           {
             "type": 1,
             "content": {
-              "json": "**Background**\r\n\r\nA script is run on the client to collect well known registry keys that either cause issues with the Windows Update experience or have no effect on Windows Update delivery or installation on Windows 10/11 device.\r\n\r\nThe script inventoires these registry keys and other Windows Update related settings and sends them to Log Analytics. \r\n\r\n**Device Settings**\r\n\r\n|Setting|Function|\r\n|-|-|\r\n|Script Version|Track which script was used to collect inventory information|\r\n|DeviceName|Name of the Device|\r\n|ManagedDeviceID|Managed Device ID in Intune. Can be useful if joining other Log Analytics tables|\r\n|AzureADDeviceID|Azure AD Device ID. Can be useful if joining other Log Analytics tables|\r\n|ComputerOSVersion|Windows OS and Build Information|\r\n|ComputerOSBuild|OS Build Information|\r\n|DefaultAUService|Is the default AU Service Microsoft Update or Windows Server Update Services|\r\n|CoMgmtWorkload|Returns True if the device co-management workload includes Windows Updates|\r\n|CoMgmtValue|Which co-management workloads are set on the client|"
+              "json": "**Background**\r\n\r\nA script is run on the client to collect well known registry keys that either cause issues with the Windows Update experience or have no effect on Windows Update delivery or installation on Windows 10/11 device.\r\n\r\nThe script inventories these registry keys and other Windows Update related settings and sends them to Log Analytics."
             },
             "name": "text - 1"
           },
           {
             "type": 1,
             "content": {
-              "json": "**Windows Update Settings**\r\n\r\n|Registry Key|Registry Setting|\r\n|-|-|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|AutoInstallMinorUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|AutoRestartDeadlinePeriodInDays|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|AutoRestartNotificationSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|AutoRestartRequiredNotificationDismissal|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|BranchReadinessLevel|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferFeatureUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferFeatureUpdatesPeriodInDays|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferQualityUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferQualityUpdatesPeriodInDays|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DisableDualScan|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DoNotConnectToWindowsUpdateInternetLocations|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|ElevateNonAdmins|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|EnableFeaturedSoftware|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|EngagedRestartDeadline|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|EngagedRestartSnoozeSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|EngagedRestartTransitionSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|IncludeRecommendedUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAUAsDefaultShutdownOption|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAUShutdownOption|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAutoRebootWithLoggedOnUsers|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAutoUpdate|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|PauseFeatureUpdatesStartTime|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|PauseQualityUpdatesStartTime|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootRelaunchTimeout|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootRelaunchTimeoutEnabled|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootWarningTimeout|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootWarningTimeoutEnabled|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RescheduleWaitTime|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU |RescheduleWaitTimeEnabled|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|ScheduleImminentRestartWarning|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|ScheduleRestartWarning|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartDeadline|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartNotificationConfig|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartNotificationDisable|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartRequiredNotificationDismissal|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetEDURestart|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetEngagedRestartTransitionSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetRestartWarningSchd|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|WUServer|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|WUStatusServer|"
+              "json": "**Device Settings**\r\n\r\n|Setting|Function|\r\n|-|-|\r\n|Script Version|Track which script was used to collect inventory information|\r\n|DeviceName|Name of the Device|\r\n|ManagedDeviceID|Managed Device ID in Intune. Can be useful if joining other Log Analytics tables|\r\n|AzureADDeviceID|Azure AD Device ID. Can be useful if joining other Log Analytics tables|\r\n|ComputerOSVersion|Windows OS and Build Information|\r\n|ComputerOSBuild|OS Build Information|\r\n|DefaultAUService|Is the default AU Service Microsoft Update or Windows Server Update Services|\r\n|CoMgmtWorkload|Returns True if the device co-management workload includes Windows Updates|\r\n|CoMgmtValue|Which co-management workloads are set on the client|\r\n|WSUSServer|WSUS Server client is registered to|\r\n|WSUSStatusServer|WSUS Status Server client is registered to|"
+            },
+            "name": "text - 1 - Copy"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "**Service Breaking Settings**\r\n\r\n|Registry Key|Registry Setting|\r\n|-|-|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DisableDualScan|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DoNotConnectToWindowsUpdateInternetLocations|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAutoUpdate|"
             },
             "name": "Reg Settings"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "**Service Affecting Settings**\r\n\r\n|Registry Key|Registry Setting|\r\n|-|-|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|AutoInstallMinorUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|AutoRestartDeadlinePeriodInDays|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|AutoRestartNotificationSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|AutoRestartRequiredNotificationDismissal|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|BranchReadinessLevel|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|EnableFeaturedSoftware|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|EngagedRestartDeadline|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|EngagedRestartSnoozeSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|EngagedRestartTransitionSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|IncludeRecommendedUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAUAsDefaultShutdownOption|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAUShutdownOption|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|NoAutoRebootWithLoggedOnUsers|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|PauseFeatureUpdatesStartTime|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|PauseQualityUpdatesStartTime|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootRelaunchTimeout|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootRelaunchTimeoutEnabled|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootWarningTimeout|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RebootWarningTimeoutEnabled|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU|RescheduleWaitTime|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU |RescheduleWaitTimeEnabled|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|ScheduleImminentRestartWarning|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|ScheduleRestartWarning|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartDeadline|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartNotificationConfig|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartNotificationDisable|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetAutoRestartRequiredNotificationDismissal|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetEDURestart|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetEngagedRestartTransitionSchedule|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|SetRestartWarningSchd|"
+            },
+            "name": "Reg Settings - Copy"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "**Service Settings that have no effect**\r\n\r\n|Registry Key|Registry Setting|\r\n|-|-|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferFeatureUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferFeatureUpdatesPeriodInDays|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferQualityUpdates|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|DeferQualityUpdatesPeriodInDays|\r\n|Software\\Policies\\Microsoft\\Windows\\WindowsUpdate|ElevateNonAdmins|"
+            },
+            "name": "Reg Settings - Copy - Copy"
           }
         ]
       },
