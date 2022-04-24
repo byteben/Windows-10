@@ -133,7 +133,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\r\n| where \r\nisnotempty( DeviceName_s ) and\r\nBranchReadinessLevel_d in (2, 4, 6, 32)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 2, \"Fast\",\"Other\")\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 4, \"Slow\",BranchCacheLevel)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 6, \"Insider\",BranchCacheLevel)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 32, \"FU from GA Channel\",BranchCacheLevel)\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| summarize dcount(DeviceName_s) by BranchCacheLevel",
+              "query": "WUDevice_Settings_CL\r\n| where \r\nisnotempty( DeviceName_s ) and\r\nBranchReadinessLevel_d in (2, 4, 6, 32)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 2, \"Fast\",\"Other\")\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 4, \"Slow\",BranchCacheLevel)\r\n| extend BranchCacheLevel = iff(BranchReadinessLevel_d == 6, \"Insider\",BranchCacheLevel)\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| summarize dcount(DeviceName_s) by BranchCacheLevel",
               "size": 3,
               "title": "Devices targeted for Preview Builds",
               "queryType": 0,
@@ -158,7 +158,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| summarize Enabled = countif(DisableDualScan_d == 1), NotEnabled = countif(DisableDualScan_d == 0)\r\n| extend Result = pack(\"Enabled\", Enabled, \"NotEnabled\", NotEnabled)\r\n| mvexpand kind = array Result\r\n| project Result = tostring(Result[0]), Value = toint(Result[1])\r\n\r\n\r\n\r\n\r\n\r\n",
+              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| summarize EnabledforWU = countif(DisableDualScan_d == 1 and DefaultAUService_s != \"Windows Server Update Service\"), EnabledforWSUS = countif(DisableDualScan_d == 1 and DefaultAUService_s == \"Windows Server Update Service\"), NotEnabled = countif(DisableDualScan_d == 0)\r\n| extend Result = pack(\"EnabledforWU\", EnabledforWU, \"EnabledforWSUS\", EnabledforWSUS, \"NotEnabled\", NotEnabled)\r\n| mvexpand kind = array Result\r\n| project Result = tostring(Result[0]), Value = toint(Result[1])\r\n\r\n\r\n\r\n\r\n\r\n",
               "size": 0,
               "title": "DisableDualScan",
               "queryType": 0,
@@ -219,12 +219,16 @@
               "chartSettings": {
                 "seriesLabelSettings": [
                   {
-                    "seriesName": "Enabled",
-                    "color": "red"
-                  },
-                  {
                     "seriesName": "NotEnabled",
                     "color": "green"
+                  },
+                  {
+                    "seriesName": "EnabledforWSUS",
+                    "color": "blue"
+                  },
+                  {
+                    "seriesName": "EnabledforWU",
+                    "color": "red"
                   }
                 ]
               },
@@ -401,7 +405,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = DisableDualScan_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n\r\n",
+              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DisableDualScan_d == 1 or DisableDualScan_d == 0)\r\n| extend DisableDualScan = iff(DisableDualScan_d == 1 and DefaultAUService_s == \"Windows Server Update Service\", \"Enabled (WSUS)\", \"Other\")\r\n| extend DisableDualScan = iff(DisableDualScan_d == 1 and DefaultAUService_s != \"Windows Server Update Service\", \"Enabled (WU)\", DisableDualScan)\r\n| extend DisableDualScan = iff(DisableDualScan_d == 0, \"NotEnabled\", DisableDualScan)\r\n| summarize Devices = count(DeviceName_s) by Setting = DisableDualScan\r\n| order by Setting\r\n\r\n\r\n\r\n\r\n\r\n",
               "size": 3,
               "title": "DisableDualScan",
               "queryType": 0,
@@ -409,6 +413,33 @@
               "visualization": "table",
               "gridSettings": {
                 "formatters": [
+                  {
+                    "columnMatch": "Setting",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "contains",
+                          "thresholdValue": "WSUS",
+                          "representation": "blue",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "contains",
+                          "thresholdValue": "WU",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
                   {
                     "columnMatch": "RegValue",
                     "formatter": 18,
@@ -437,16 +468,22 @@
                       "thresholdsOptions": "colors",
                       "thresholdsGrid": [
                         {
-                          "operator": "==",
-                          "thresholdValue": "1",
-                          "representation": "red",
-                          "text": "{0}{1}"
+                          "operator": "contains",
+                          "thresholdValue": "WU",
+                          "representation": "redBright",
+                          "text": "{0}{1"
+                        },
+                        {
+                          "operator": "contains",
+                          "thresholdValue": "WSUS",
+                          "representation": "blue",
+                          "text": ""
                         },
                         {
                           "operator": "Default",
                           "thresholdValue": null,
                           "representation": "green",
-                          "text": "{0}{1}"
+                          "text": ""
                         }
                       ]
                     }
@@ -495,7 +532,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (NoAutoUpdate_d == 1 or NoAutoUpdate_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = NoAutoUpdate_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n\r\n",
+              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (NoAutoUpdate_d == 1 or NoAutoUpdate_d == 0)\r\n| extend NoAutoUpdate = iff(NoAutoUpdate_d == 1, \"Enabled\", \"Other\")\r\n| extend NoAutoUpdate = iff(NoAutoUpdate_d == 0, \"NotEnabled\", NoAutoUpdate)\r\n| summarize Devices = count(DeviceName_s) by Setting = NoAutoUpdate\r\n| order by Setting\r\n\r\n\r\n\r\n\r\n\r\n",
               "size": 3,
               "title": "NoAutoUpdate",
               "queryType": 0,
@@ -503,6 +540,31 @@
               "visualization": "table",
               "gridSettings": {
                 "formatters": [
+                  {
+                    "columnMatch": "Setting",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "Enabled",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "contains",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
                   {
                     "columnMatch": "RegValue",
                     "formatter": 18,
@@ -589,7 +651,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DoNotConnectToWindowsUpdateInternetLocations_d == 1 or DoNotConnectToWindowsUpdateInternetLocations_d == 0)\r\n| summarize Devices = count(DeviceName_s) by RegValue = DoNotConnectToWindowsUpdateInternetLocations_d\r\n| order by RegValue\r\n\r\n\r\n\r\n\r\n\r\n",
+              "query": "WUDevice_Settings_CL\r\n| where\r\nisnotempty( DeviceName_s )\r\n| summarize arg_max(TimeGenerated, *) by DeviceName_s\r\n| where (DoNotConnectToWindowsUpdateInternetLocations_d == 1 or DoNotConnectToWindowsUpdateInternetLocations_d == 0)\r\n| extend DoNotConnectToWindowsUpdateInternetLocations = iff(DoNotConnectToWindowsUpdateInternetLocations_d == 1, \"Enabled\", \"Other\")\r\n| extend DoNotConnectToWindowsUpdateInternetLocations = iff(DoNotConnectToWindowsUpdateInternetLocations_d == 0, \"NotEnabled\", DoNotConnectToWindowsUpdateInternetLocations)\r\n| summarize Devices = count(DeviceName_s) by Setting = DoNotConnectToWindowsUpdateInternetLocations\r\n| order by Setting\r\n\r\n\r\n\r\n\r\n\r\n",
               "size": 3,
               "title": "DoNotConnectToWindowsUpdateInternetLocations",
               "queryType": 0,
@@ -597,6 +659,27 @@
               "visualization": "table",
               "gridSettings": {
                 "formatters": [
+                  {
+                    "columnMatch": "Setting",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "Enabled",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        }
+                      ]
+                    }
+                  },
                   {
                     "columnMatch": "RegValue",
                     "formatter": 18,
