@@ -4,7 +4,8 @@ param (
 
 )
 
-#Dilithium Shopping List
+################CHOP IT################
+
 $Generation = 2
 $HDDSize = 30GB
 $ProcessorCount = 2
@@ -14,18 +15,32 @@ $VirtualSwitchName = "WAN"
 $ISOPath = "C:\MMSLABS\ISO\W1121H2.iso"
 $VHDXPath = (Join-Path -Path $VMPath -ChildPath $VMName) + ".vhdx"
 
-#MakeItSo
+################COOK IT################
+
+#Create VM
 New-VM -Name $VMName -Path $VMPath -MemoryStartupBytes $StartupMEM -SwitchName $VirtualSwitchName -Generation $Generation
+
+#Change Processor Count
+Set-VMProcessor -VMName $VMName -Count $ProcessorCount
+
+#Create VHD
 New-VHD -Path $VHDXPath -SizeBytes $HDDSize -Dynamic
 Add-VMHardDiskDrive -VMName $VMName -Path $VHDXPath
+
+#Attach ISO
 Add-VMDvdDrive -VMName  $VMName -Path $ISOPath
+
+#Change Boot Order
 $BootDVD = Get-VMFirmware $VMName | Select-Object -ExpandProperty BootOrder | where-object { $_.Device -like "DVD*" }
 $BootHDD = Get-VMFirmware $VMName | Select-Object -ExpandProperty BootOrder | where-object { $_.Device -like "HardDiskDrive*" }
 $BootPXE = Get-VMFirmware $VMName | Select-Object -ExpandProperty BootOrder | where-object { $_.Device -like "VMNetwork*" }
 Set-VMFirmware -VMName $VMName -BootOrder $BootHDD, $BootDVD, $BootPXE
-Set-VMProcessor -VMName $VMName -Count $ProcessorCount
+
+#Enable TPM
 Set-VMKeyProtector -VMName $VMName -NewLocalKeyProtector
 Enable-VMTPM -VMName $VMName
 
-#WeNeedMorePower
+################CRANK IT################
+
+#Start VM
 Start-VM -Name $VMName
