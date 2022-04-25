@@ -1,12 +1,20 @@
-$VMName = "AP0001"
+param (
+    [Parameter(Mandatory = $true)]
+    [string]$VMName
+
+)
+
+#Dilithium Shopping List
 $Generation = 2
 $HDDSize = 30GB
 $ProcessorCount = 2
 $StartupMEM = 4096MB
-$VMPath = "C:\MY_VM_LAB"
+$VMPath = "C:\MMSLABS\QuickVM"
 $VirtualSwitchName = "WAN"
-$ISOPath = "C:\LabSources\ISOs\en-us_windows_11_business_editions_version_21h2_updated_october_2021_x64_dvd_320e70b4.iso"
+$ISOPath = "C:\MMSLABS\ISO\W1121H2.iso"
 $VHDXPath = (Join-Path -Path $VMPath -ChildPath $VMName) + ".vhdx"
+
+#MakeItSo
 New-VM -Name $VMName -Path $VMPath -MemoryStartupBytes $StartupMEM -SwitchName $VirtualSwitchName -Generation $Generation
 New-VHD -Path $VHDXPath -SizeBytes $HDDSize -Dynamic
 Add-VMHardDiskDrive -VMName $VMName -Path $VHDXPath
@@ -18,4 +26,6 @@ Set-VMFirmware -VMName $VMName -BootOrder $BootHDD, $BootDVD, $BootPXE
 Set-VMProcessor -VMName $VMName -Count $ProcessorCount
 Set-VMKeyProtector -VMName $VMName -NewLocalKeyProtector
 Enable-VMTPM -VMName $VMName
+
+#WeNeedMorePower
 Start-VM -Name $VMName
