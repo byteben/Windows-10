@@ -18,7 +18,13 @@ $VHDXPath = (Join-Path -Path $VMPath -ChildPath $VMName) + ".vhdx"
 ################COOK IT################
 
 #Create VM
-New-VM -Name $VMName -Path $VMPath -MemoryStartupBytes $StartupMEM -SwitchName $VirtualSwitchName -Generation $Generation
+If (Test-Path -Path (Join-Path -Path $VMPath -ChildPath $VMName)) {
+    Write-Warning "That VM Already exists, please specify a different VM name"
+    Exit 0
+}
+else {
+    New-VM -Name $VMName -Path $VMPath -MemoryStartupBytes $StartupMEM -SwitchName $VirtualSwitchName -Generation $Generation
+}
 
 #Change Processor Count
 Set-VMProcessor -VMName $VMName -Count $ProcessorCount
