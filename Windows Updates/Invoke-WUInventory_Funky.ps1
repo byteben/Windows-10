@@ -63,6 +63,12 @@ $WUSettingsArray += "SetRestartWarningSchd"
 $WUSettingsArray += "WUServer"
 $WUSettingsArray += "WUStatusServer"
 
+#Collect Scan Source Registry Keys
+$WUSettingsArray += "SetPolicyDrivenUpdateSourceForDriverUpdates"
+$WUSettingsArray += "SetPolicyDrivenUpdateSourceForFeatureUpdates"
+$WUSettingsArray += "SetPolicyDrivenUpdateSourceForOtherUpdates"
+$WUSettingsArray += "SetPolicyDrivenUpdateSourceForQualityUpdates"
+
 #Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 $WUAUSettingsArray = @()
 $WUAUSettingsArray += "AutoInstallMinorUpdates"

@@ -146,6 +146,10 @@ $csv = Import-Csv $testdatapath | Select-Object `
 @{Name = "SetAutoRestartRequiredNotificationDismissal"; Expression = { [int]$_.SetAutoRestartRequiredNotificationDismissal } }, `
 @{Name = "SetEDURestart"; Expression = { [int]$_.SetEDURestart } }, `
 @{Name = "SetEngagedRestartTransitionSchedule"; Expression = { [int]$_.SetEngagedRestartTransitionSchedule } }, `
+@{Name = "SetPolicyDrivenUpdateSourceForDriverUpdates"; Expression = { [int]$_.SetPolicyDrivenUpdateSourceForDriverUpdates } }, `
+@{Name = "SetPolicyDrivenUpdateSourceForFeatureUpdates"; Expression = { [int]$_.SetPolicyDrivenUpdateSourceForFeatureUpdates } }, `
+@{Name = "SetPolicyDrivenUpdateSourceForOtherUpdates"; Expression = { [int]$_.SetPolicyDrivenUpdateSourceForOtherUpdates } }, `
+@{Name = "SetPolicyDrivenUpdateSourceForQualityUpdates"; Expression = { [int]$_.SetPolicyDrivenUpdateSourceForQualityUpdates } }, `
 @{Name = "SetRestartWarningSchd"; Expression = { [int]$_.SetRestartWarningSchd } }, `
     WUServer, `
     WUStatusServer
