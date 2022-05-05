@@ -24,10 +24,10 @@
 $ScriptVersion = "PR003"
 
 #Log Analytics Workspace ID
-$CustomerID = "3c547246-0c3b-4493-89bc-7eb5b53129b4"
+$CustomerID = ""
 
 #Log Analytics Workspace Primary Key
-$SharedKey = "TzBPHmaxzxApj+HZbHH+hjwt2/Dx1bwJBkCbMvKFLeLzXNCHG2quBhPA+sRhJ9CQ5/RD6FlxYNiK+i5VxjpvTQ=="
+$SharedKey = ""
 
 #Custom Log Name
 $LogType = "WUDevice_Settings"
